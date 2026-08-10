@@ -47,7 +47,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - npm production dependency audit: 0 vulnerabilities.
 - Predeploy secret/API exposure scan: pass.
 - Canonical verifier: pass with `PYTHONUTF8=1` on Windows.
-- GitHub Actions: API lint/tests pass; web production build pass.
+- GitHub Actions on draft PR #2: API lint/tests pass; web production build pass.
 
 # Next task
 

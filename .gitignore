@@ -10,4 +10,5 @@ node_modules/
 web/dist/
 coverage/
 .playwright-cli/
+.firebase/
 tmp/

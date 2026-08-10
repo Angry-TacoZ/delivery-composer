@@ -13,7 +13,7 @@ Public low-risk demonstration using synthetic data only. The hosted demo does no
 - Region: `us-east1`
 - Runtime mode: `DEMO_MODE=true`
 - Runtime identity: dedicated `delivery-composer-runtime` service account with no project roles
-- Source-build identity: default Compute Engine service account with only predefined `roles/run.builder`
+- Source-build identity: default Compute Engine service account; the script ensures predefined `roles/run.builder` is present without claiming or removing any other existing bindings
 - Capacity: zero minimum instances, one maximum instance, 1 CPU, 512 MiB memory, 20 concurrent requests
 
 Firebase Hosting serves `web/dist`, routes `/api/**` to Cloud Run, and routes remaining paths to the React application. Cloud Run retains reviews only in one process's memory; a restart or scale-to-zero event clears them.
@@ -39,7 +39,7 @@ Both tools must show access to project `composermvp-4d5c0`. Do not continue if e
 
 ## Deploy in dependency order
 
-The deployment script verifies source state, runs the canonical verifier and secret scan, creates a no-role runtime service account if required, idempotently grants the source-build identity only `roles/run.builder`, deploys Cloud Run, verifies its deterministic health contract, deploys Firebase Hosting, and verifies the Hosting-to-Cloud-Run rewrite.
+The deployment script verifies source state, runs the canonical verifier and secret scan, creates a no-role runtime service account if required, idempotently grants `roles/run.builder` to the source-build identity, deploys Cloud Run, verifies its deterministic health contract, deploys Firebase Hosting, and verifies the Hosting-to-Cloud-Run rewrite after a bounded propagation retry.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\deploy-demo.ps1 -BudgetAlertConfirmed

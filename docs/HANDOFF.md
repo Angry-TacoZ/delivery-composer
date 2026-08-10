@@ -4,9 +4,9 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 # Current status
 
-The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 through PR #8 are merged; PR #8's squash commit is `aa08c5ca9fc8d7904d7dae9d976bb8ae89bf5013`. Draft PR #9 adds the least-privilege source-builder role discovered during the second controlled deployment attempt.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 through PR #9 are merged; PR #9's squash commit is `b978b6ab39931eeb5413fc49584df7361d36af24`. That commit is deployed to Cloud Run revision `delivery-composer-api-00001-vh9` and Firebase Hosting release `308e75`. Draft PR #10 records the live deployment and hardens repeat deployment verification.
 
-The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp-4d5c0` is on Blaze, and Aiven PostgreSQL service `delivery-composer-db` exists but remains disabled for today's deployment. The build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and integration verification are ready.
+The MVP is live and browser-verified at `https://composermvp-4d5c0.web.app` in deterministic demo mode. Firebase project `composermvp-4d5c0` is on Blaze, and Aiven PostgreSQL service `delivery-composer-db` exists but remains disabled for today's deployment. The build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and integration verification are ready.
 
 # Decisions
 
@@ -110,17 +110,19 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Firebase project visibility: authenticated CLI access confirmed active project `composermvp-4d5c0` and project number `848341309407`; the session was then revoked for credential containment and must be re-established without printing token-bearing JSON.
 - First controlled deployment attempt: canonical verification and Google API enablement passed, then deployment stopped before Cloud Run creation because PowerShell treated the expected missing-service-account lookup as fatal. PR #8 replaces that probe with an empty-success list/filter lookup.
 - Second controlled deployment attempt: verification passed and the no-role runtime identity was created; source staging then stopped before Cloud Run revision creation because the default build identity lacked `storage.objects.get`. PR #9 idempotently grants predefined `roles/run.builder`, whose permissions are limited to source-build storage, Artifact Registry, source reads, and build logs.
+- Third controlled deployment attempt: Cloud Run revision `delivery-composer-api-00001-vh9` and Hosting release `308e75` deployed successfully. The immediate Hosting smoke check saw Firebase's transient not-found page; manual retries seconds later confirmed the application shell and `/api/health` rewrite on both default Firebase domains.
+- Live browser smoke test: the hosted UI composed the synthetic critical-infrastructure team, expanded evidence, stored an approval in the API session, completed all five IDEAL stages, and produced no browser console warnings or errors.
+- Custom domain: Firebase registered `composer.jamesai.space`; Network Solutions now authoritatively serves `CNAME composer composermvp-4d5c0.web.app` with the other DNS records unchanged. Google Public DNS and Firebase verification remain pending propagation.
 
 # Next task
 
-1. Review and merge draft PR #9.
-2. Rerun the ordered deployment from clean `main`; the $2 budget and both CLI sessions are configured.
-3. Verify the default Hosting URL and API rewrite, connect `composer.jamesai.space`, and verify DNS plus HTTPS.
-4. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run, review, and revision persistence.
+1. After public DNS propagation, click Verify in the open Firebase domain dialog and confirm HTTPS plus `/api/health` at `composer.jamesai.space`.
+2. Review and merge draft PR #10; no application redeploy is required for its documentation, ignore rule, and future-deploy retry.
+3. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run, review, and revision persistence.
 
 # Risks or blockers
 
-- Readiness status: `NOT PRODUCTION-READY` for public hosting until billing, server-side secrets, live database/model verification, deployment smoke tests, and rollback checks are complete.
+- Readiness status: `CONDITIONALLY READY` for the declared public-low-risk synthetic demo scope. The default Firebase URL and complete hosted workflow are verified; the custom-domain DNS and certificate are still propagating. It is not ready for real client/personnel data or the unverified PostgreSQL/Gemini path.
 - Google Cloud CLI 579.0.0 and Firebase CLI are authenticated without printing tokens. A user-confirmed $2 budget exists, although the Budget API list had not yet reflected it at deployment time.
 - Public access is intentionally low-risk only: anonymous requests are bounded but not authenticated, and the rate limiter is per Cloud Run instance. Do not use real client or personnel data.
 - The generated visual is C86-inspired concept art; it is not an official brand asset.

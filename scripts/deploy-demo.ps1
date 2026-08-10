@@ -159,13 +159,29 @@ try {
     Invoke-Firebase @("deploy", "--only", "hosting", "--project", $ProjectId)
 
     $hostingUrl = "https://$ProjectId.web.app"
-    $hostingResponse = Invoke-WebRequest -Uri $hostingUrl -TimeoutSec 30
-    if ($hostingResponse.StatusCode -ne 200 -or $hostingResponse.Content -notmatch "Delivery Composer") {
-        throw "Firebase Hosting did not return the expected application shell."
+    $hostingVerified = $false
+    for ($attempt = 1; $attempt -le 6; $attempt++) {
+        try {
+            $hostingResponse = Invoke-WebRequest -Uri $hostingUrl -TimeoutSec 30
+            if ($hostingResponse.StatusCode -ne 200 -or $hostingResponse.Content -notmatch "Delivery Composer") {
+                throw "Firebase Hosting did not return the expected application shell."
+            }
+            $hostingHealth = Invoke-RestMethod -Uri "$hostingUrl/api/health" -TimeoutSec 30
+            if ($hostingHealth.execution_mode -ne "deterministic_demo") {
+                throw "Firebase Hosting is not routing API requests to the deterministic Cloud Run service."
+            }
+            $hostingVerified = $true
+            break
+        }
+        catch {
+            if ($attempt -eq 6) {
+                throw "Firebase Hosting did not pass its smoke tests after a bounded propagation wait: $($_.Exception.Message)"
+            }
+            Start-Sleep -Seconds 5
+        }
     }
-    $hostingHealth = Invoke-RestMethod -Uri "$hostingUrl/api/health" -TimeoutSec 30
-    if ($hostingHealth.execution_mode -ne "deterministic_demo") {
-        throw "Firebase Hosting is not routing API requests to the deterministic Cloud Run service."
+    if (-not $hostingVerified) {
+        throw "Firebase Hosting verification ended without a passing result."
     }
 
     Write-Host "Deployment verified."

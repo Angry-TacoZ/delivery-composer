@@ -16,6 +16,18 @@ Consultancies often know the experience they need but cannot consistently turn a
 
 > **Rules first. Semantic retrieval second. Human decision always.**
 
+## IDEAL methodology alignment
+
+The product journey mirrors [C86's IDEAL methodology](https://www.c86.tech/methodology) while keeping the existing operations-tool interface:
+
+1. **Identify** captures the client environment, stakeholders, intended outcome, and highest-impact need.
+2. **Define** turns that opportunity into roles, skills, clearance, and a delivery path.
+3. **Execute** composes an eligible team using deterministic rules or the configured PostgreSQL/pgvector path.
+4. **Assure** exposes constraint checks and evidence for a human delivery leader to validate.
+5. **Learn** records the decision and optional reviewer notes for later refinement.
+
+The stage strip reflects the real workflow state. In deterministic preview mode, Learn feedback is retained only for the current API process lifetime and is labeled `session`. When the live database and Gemini path are both configured, compositions and reviews are stored in PostgreSQL and labeled `postgres`. Neither path claims autonomous model training.
+
 ## What the demo proves
 
 - A realistic client brief can be converted into a three-person delivery recommendation.
@@ -104,7 +116,7 @@ Run the same required checks used by the repository contract:
 npm.cmd --prefix web run build
 ```
 
-The visual workflow is also checked at desktop and mobile widths for composition, evidence expansion, review recording, console errors, unintended overflow, and the animated trajectory field. See [`docs/design-qa.md`](docs/design-qa.md).
+The visual workflow is also checked at desktop and mobile widths for composition, evidence expansion, IDEAL stage transitions, review recording, console errors, unintended overflow, and the animated trajectory field. See [`docs/design-qa.md`](docs/design-qa.md).
 
 ## Current boundary
 

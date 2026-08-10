@@ -45,3 +45,10 @@ export interface ComposeResponse {
   retrieval_mode: "postgres_pgvector" | "deterministic_demo";
   generated_at: string;
 }
+
+export interface ReviewResponse {
+  run_id: string;
+  status: "approved" | "needs_changes";
+  persistence_mode: "session" | "postgres";
+  recorded_at: string;
+}

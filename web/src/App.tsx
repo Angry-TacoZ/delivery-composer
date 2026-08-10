@@ -1,13 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { composeTeam, fetchDemoBrief, recordReview } from "./api";
-import type { ComposeResponse, TeamAssignment } from "./types";
+import type { ComposeResponse, ReviewResponse, TeamAssignment } from "./types";
 
 const FALLBACK_BRIEF = `Build a three-person delivery team for a critical-infrastructure resilience programme.
 The client needs a security-first discovery and implementation plan covering zero trust,
 cloud transformation, data governance, and an AI-assisted security operations use case.
 The engagement starts in four weeks and requires SC-cleared consultants with public-sector
 or regulated-infrastructure experience.`;
+
+const IDEAL_STAGES = [
+  { name: "Identify", detail: "Environment, stakeholders & impact" },
+  { name: "Define", detail: "Roles, constraints & delivery path" },
+  { name: "Execute", detail: "Eligible team composed with pace" },
+  { name: "Assure", detail: "Evidence, security & validation" },
+  { name: "Learn", detail: "Decision and feedback captured" },
+] as const;
 
 function percent(score: number): string {
   return `${Math.round(score * 100)}%`;
@@ -59,7 +67,8 @@ export default function App() {
   const [result, setResult] = useState<ComposeResponse | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reviewState, setReviewState] = useState<"approved" | "needs_changes" | null>(null);
+  const [reviewState, setReviewState] = useState<ReviewResponse | null>(null);
+  const [reviewNotes, setReviewNotes] = useState("");
 
   useEffect(() => {
     void fetchDemoBrief().then(setBrief).catch(() => undefined);
@@ -70,10 +79,18 @@ export default function App() {
     return "Deterministic preview";
   }, [result]);
 
+  const idealStageStates = useMemo(() => IDEAL_STAGES.map((_, index) => {
+    if (reviewState) return "complete";
+    if (result) return index < 3 ? "complete" : index === 3 ? "active" : "queued";
+    if (isRunning) return index === 0 ? "complete" : index === 1 ? "active" : "queued";
+    return index === 0 ? "active" : "queued";
+  }), [isRunning, result, reviewState]);
+
   async function runComposition() {
     setIsRunning(true);
     setError(null);
     setReviewState(null);
+    setReviewNotes("");
     try {
       setResult(await composeTeam(brief));
     } catch (caughtError) {
@@ -86,8 +103,7 @@ export default function App() {
   async function submitReview(status: "approved" | "needs_changes") {
     if (!result) return;
     try {
-      await recordReview(result.run_id, status);
-      setReviewState(status);
+      setReviewState(await recordReview(result.run_id, status, reviewNotes.trim()));
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Review could not be saved.");
     }
@@ -116,18 +132,24 @@ export default function App() {
           </div>
         </div>
 
-        <ol className="method-strip" aria-label="Composition method">
-          <li><span>01</span>Extract requirements</li>
-          <li><span>02</span>Apply constraints</li>
-          <li><span>03</span>Retrieve evidence</li>
-          <li><span>04</span>Review decision</li>
+        <ol className="method-strip" aria-label="C86 IDEAL delivery cycle">
+          {IDEAL_STAGES.map((stage, index) => {
+            const stageState = idealStageStates[index];
+            return (
+              <li key={stage.name} className={stageState} aria-current={stageState === "active" ? "step" : undefined}>
+                <span className="stage-number">0{index + 1}</span>
+                <span className="stage-copy"><strong>{stage.name}</strong><small>{stage.detail}</small></span>
+                <span className="stage-state">{stageState === "complete" ? "Complete" : stageState === "active" ? "Active" : "Queued"}</span>
+              </li>
+            );
+          })}
         </ol>
       </section>
 
       <section className="workbench" aria-label="Delivery team composition workspace">
         <header className="section-intro">
           <div>
-            <p className="section-number">01 / Compose</p>
+            <p className="section-number">01 / Identify · 02 / Define · 03 / Execute</p>
             <h2>From client need to accountable recommendation.</h2>
           </div>
           <p>The system separates deterministic constraints from semantic relevance, then shows the evidence a delivery leader needs to challenge the result.</p>
@@ -136,7 +158,7 @@ export default function App() {
         <div className="composer-grid">
           <section className="brief-pane">
             <div className="pane-heading">
-              <span>Client brief</span>
+              <span>Identify / Client brief</span>
               <button onClick={() => setBrief(FALLBACK_BRIEF)} className="text-button">Restore sample</button>
             </div>
             <label htmlFor="client-brief">Engagement requirements</label>
@@ -159,7 +181,7 @@ export default function App() {
 
           <section className="recommendation-pane" aria-live="polite">
             <div className="pane-heading">
-              <span>Recommended composition</span>
+              <span>Execute / Recommended composition</span>
               <span className="mode-label">{result ? processLabel : "Awaiting brief"}</span>
             </div>
 
@@ -182,24 +204,45 @@ export default function App() {
 
       <section className="review-section" aria-label="Human review">
         <header className="review-heading">
-          <p className="section-number">02 / Decide</p>
-          <h2>Human review is the control plane.</h2>
+          <p className="section-number">04 / Assure · 05 / Learn</p>
+          <h2>Assure the outcome. Learn from the decision.</h2>
         </header>
 
         {result ? (
           <div className="review-grid">
             <dl className="requirements-list">
+              <div><dt>Defined roles</dt><dd>{result.requirements.requested_roles.join(" · ")}</dd></div>
               <div><dt>Required skills</dt><dd>{result.requirements.required_skills.join(" · ")}</dd></div>
               <div><dt>Minimum clearance</dt><dd>{result.requirements.minimum_clearance.toUpperCase()}</dd></div>
               <div><dt>Requirement source</dt><dd>{result.requirements.extraction_source === "gemini" ? "Structured AI extraction" : "Deterministic preview"}</dd></div>
             </dl>
             <div className="review-actions">
               <p>Recommendation is advisory. Confirm fit, availability, and accountability with delivery leadership.</p>
+              <label className="review-notes-label" htmlFor="review-notes">
+                Learn / Review notes <span>Optional</span>
+              </label>
+              <textarea
+                id="review-notes"
+                className="review-notes"
+                value={reviewNotes}
+                onChange={(event) => setReviewNotes(event.target.value)}
+                maxLength={600}
+                disabled={reviewState !== null}
+                placeholder="Capture a lesson, missing capability, or reason for the decision."
+              />
+              <div className="review-notes-meta">
+                <span>{reviewNotes.length} / 600</span>
+                <span>{result.retrieval_mode === "postgres_pgvector" ? "Stored with the run" : "Current API session"}</span>
+              </div>
               <div className="decision-buttons">
                 <button onClick={() => void submitReview("approved")} className="approve-button" disabled={reviewState !== null}>Approve proposed team</button>
                 <button onClick={() => void submitReview("needs_changes")} className="revise-button" disabled={reviewState !== null}>Request revision</button>
               </div>
-              {reviewState && <span className="review-confirmation">Decision recorded: {reviewState === "approved" ? "approved" : "revision requested"}.</span>}
+              {reviewState && (
+                <span className="review-confirmation">
+                  {reviewState.status === "approved" ? "Team approved" : "Revision requested"}. Feedback stored {reviewState.persistence_mode === "postgres" ? "in PostgreSQL" : "for this API session"}.
+                </span>
+              )}
             </div>
           </div>
         ) : (

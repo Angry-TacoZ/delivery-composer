@@ -88,8 +88,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.post("/api/runs/{run_id}/review", response_model=ReviewResponse)
     def record_review(run_id: UUID, review: ReviewInput) -> ReviewResponse:
         # The endpoint intentionally accepts only bounded, non-sensitive demonstration notes.
-        service.record_review(run_id, review)
-        return ReviewResponse(run_id=run_id, status=review.status)
+        try:
+            persistence_mode = service.record_review(run_id, review)
+        except KeyError as error:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Composition run not found in the current session.",
+            ) from error
+        return ReviewResponse(
+            run_id=run_id,
+            status=review.status,
+            persistence_mode=persistence_mode,
+        )
 
     return app
 

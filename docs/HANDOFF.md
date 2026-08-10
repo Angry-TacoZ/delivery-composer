@@ -78,6 +78,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Manual-override browser check: critical-infrastructure composition returned three Delivery Lead options; the higher-scoring ineligible candidate remained labeled with clearance and date exceptions, selection produced a visible human-override state, and approval confirmed one stored override.
 - Override-reset browser check: restoring the sample and recomposing removed the human-override state.
 - PR #4 canonical verifier: Ruff, 19 API tests, frontend production build, and predeploy secret/API exposure scan all passed on 2026-08-10.
+- GitHub Actions on draft PR #4: API lint/tests and web production build pass.
 
 # Next task
 

@@ -14,7 +14,7 @@ Expand the synthetic roster from five to fifteen profiles: three candidates for 
 
 | Role | Candidate focus | Candidate focus | Candidate focus |
 | --- | --- | --- | --- |
-| Delivery Lead | public-sector recovery | financial-services governance | media programme recovery |
+| Delivery Lead | public-sector recovery | financial-services governance | media program recovery |
 | Security Architect | critical-infrastructure zero trust | high-assurance architecture | financial/media cloud security |
 | Data & AI Engineer | governed security retrieval | financial-services AI delivery | public-sector data assurance |
 | Cloud Engineer | media platform automation | regulated cloud foundations | transport/financial platform delivery |

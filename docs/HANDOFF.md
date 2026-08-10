@@ -4,7 +4,7 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 # Current status
 
-The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 through PR #4 are merged; PR #4's squash commit is `c876ea944b46876e9e5a71ba5d1a6511a6b0293e`. Draft PR #5 now targets `main` for the actionable revision feedback loop.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 through PR #5 are merged; PR #5's squash commit is `73eb3b9c83881cbd159656f3d3e3f19478979983`. Draft PR #6 now targets `main` for Americas-facing copy localization.
 
 The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. Today's build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and Google Cloud billing are ready.
 
@@ -30,6 +30,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Deterministic comparison scores are server-attributed as a 58-point exact-role baseline, 8 points per required-capability match, and 5 points per preferred-sector match. Narrative considerations and eligibility gates are explicitly not scored.
 - Recorded decisions always expose a next action. Revision feedback must be actionable, is linked to a reviewed parent run, can alter deterministic role composition, and remains inspectable through a prior-result delta.
 - Recorded review notes are authoritative for revisions: the server rejects browser-submitted feedback that differs from the stored `needs_changes` notes, then uses the stored value for analysis, lineage, and persistence.
+- Meeting-facing synthetic briefs, candidate evidence, and generated PDF artifacts use American English because the audience is C86's President of the Americas; input parsing continues to accept UK and US sector spellings.
 
 # Changed files
 
@@ -60,6 +61,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - `api/app/domain.py`, `api/app/providers.py`, `api/app/service.py`, `api/app/repository.py`, and `api/app/migrations.py`: bounded revision context, parent-run validation, deterministic role replacement, and PostgreSQL-ready lineage.
 - `api/app/service.py` and `api/app/repository.py`: server-authoritative revision feedback retrieval and exact-match enforcement across session and PostgreSQL repositories.
 - `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: actionable recorded-decision state, re-evaluation, corrected decisions, and interactive prior-result delta.
+- `api/app/mock_briefs.py`, `api/app/demo_data.py`, `web/src/App.tsx`, and `output/pdf/`: Americas-localized synthetic briefs, candidate evidence, fallback copy, and regenerated demo artifacts.
 
 # Verification
 
@@ -96,10 +98,13 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - GitHub Actions on draft PR #5: API lint/tests and web production build pass.
 - Post-merge stack check: local `main` matches `origin/main` at PR #3's squash commit; rebased PR #4 and PR #5 are mergeable with passing GitHub Actions.
 - PR #4 merge check: local `main` matches `origin/main` at `c876ea944b46876e9e5a71ba5d1a6511a6b0293e`; PR #5 was rebased onto that commit and retargeted to `main`.
+- PR #5 merge check: local `main` matches `origin/main` at `73eb3b9c83881cbd159656f3d3e3f19478979983`; PR #6 was rebased onto that commit.
+- PR #6 canonical verifier: Ruff, 25 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10.
+- PR #6 rendered-copy check: critical-infrastructure and media briefs display `program`; the critical-infrastructure brief displays `modernize`. Historical Vite hot-reload errors from branch switching remained in the browser log, but a clean reload rendered correctly and the production build passed.
 
 # Next task
 
-1. Obtain external review for draft PR #5, address actionable feedback, and merge.
+1. Obtain external review for draft PR #6, address actionable feedback, and merge.
 2. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run, review, and revision persistence.
 3. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
 

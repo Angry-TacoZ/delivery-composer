@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { composeTeam, fetchDemoBriefs, recordReview } from "./api";
 import type { CandidateOption, ComposeResponse, DemoBrief, ReviewResponse, TeamAssignment, TeamOverride } from "./types";
 
-const FALLBACK_BRIEF = `Build a three-person delivery team for a critical-infrastructure resilience programme.
+const FALLBACK_BRIEF = `Build a three-person delivery team for a critical-infrastructure resilience program.
 The client needs a security-first discovery and implementation plan covering zero trust,
 cloud transformation, data governance, and an AI-assisted security operations use case.
 The engagement starts in four weeks and requires SC-cleared consultants with public-sector

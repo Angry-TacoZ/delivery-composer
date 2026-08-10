@@ -13,7 +13,7 @@ C86's methodology page defines a continuous cycle:
 1. **Identify the opportunity** — understand the customer environment, align stakeholders, and locate the highest-impact change.
 2. **Define the path forward** — translate business objectives into strategy, architecture, and delivery plans.
 3. **Execute with pace** — combine advisory insight with practical, ethical implementation and support.
-4. **Assure the outcome** — use oversight, security, and validation to keep solutions resilient and programmes on track.
+4. **Assure the outcome** — use oversight, security, and validation to keep solutions resilient and programs on track.
 5. **Learn and improve** — capture lessons, refine methods, and strengthen future delivery.
 
 Source: <https://www.c86.tech/methodology>

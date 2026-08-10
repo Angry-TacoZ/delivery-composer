@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "scope": "public-low-risk",
+  "secret_scan": true,
+  "checks": [
+    {
+      "name": "Python Ruff",
+      "command": ".venv/Scripts/python.exe",
+      "arguments": ["-m", "ruff", "check", "api"],
+      "timeout_seconds": 600,
+      "required": true
+    },
+    {
+      "name": "Python tests",
+      "command": ".venv/Scripts/python.exe",
+      "arguments": ["-m", "pytest", "api/tests"],
+      "timeout_seconds": 600,
+      "required": true
+    },
+    {
+      "name": "Frontend production build",
+      "command": "npm.cmd",
+      "arguments": ["--prefix", "web", "run", "build"],
+      "timeout_seconds": 600,
+      "required": true
+    }
+  ]
+}

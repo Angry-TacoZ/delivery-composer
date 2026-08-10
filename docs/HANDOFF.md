@@ -4,7 +4,7 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 # Current status
 
-The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. Draft PR #1 was opened from a planning-only commit before implementation, then the C86 visual alignment, animated trajectory field, repository documentation, screenshots, and CI were added on branch `codex/c86-visual-alignment`. Both GitHub Actions jobs are passing.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 was opened from a planning-only commit before implementation, externally reviewed with an `Approve` verdict, and squash-merged to `main` as `34edc84`. The C86 visual alignment, animated trajectory field, repository documentation, screenshots, and CI are now on `main`. Both post-merge GitHub Actions jobs pass.
 
 The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. The live PostgreSQL/pgvector + Gemini path remains unconfigured until server-side secrets and Google Cloud billing are ready.
 
@@ -44,7 +44,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 
 # Next task
 
-1. Review draft PR #1 and the live local demo for the meeting narrative, then merge when approved.
+1. Replace the deterministic local evaluation path with the configured Aiven PostgreSQL/pgvector and Gemini path, then prove run and review persistence.
 2. When ready to host: link Blaze billing, install Google Cloud CLI, create server-side `DATABASE_URL` and `GEMINI_API_KEY` secrets, run the Aiven migration/seed, deploy Cloud Run and Firebase Hosting, smoke-test the live workflow, then attach `composer.jameai.space`.
 
 # Risks or blockers

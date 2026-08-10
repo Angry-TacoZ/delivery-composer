@@ -135,6 +135,18 @@ firebase.json           Hosting and Cloud Run rewrite configuration
 
 Open `http://127.0.0.1:5173` and run the populated sample brief.
 
+## Deploy the deterministic demo
+
+The reviewed meeting deployment uses Firebase project `composermvp-4d5c0`, Cloud Run service `delivery-composer-api` in `us-east1`, and the eventual custom domain `composer.jamesai.space`. It keeps `DEMO_MODE=true`; PostgreSQL and Gemini credentials are neither required nor configured.
+
+After the deployment PR is merged, Blaze billing is active, a budget alert is verified, and both CLIs are authenticated, deploy from a clean `main` branch:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\deploy-demo.ps1 -BudgetAlertConfirmed
+```
+
+The script runs the canonical verifier, deploys Cloud Run with zero minimum and one maximum instance, verifies the credential-free health contract, deploys Firebase Hosting, and verifies the `/api/**` rewrite. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for preconditions, custom-domain setup, rollback, and known limitations.
+
 ## Enable PostgreSQL, pgvector, and Gemini
 
 Copy `.env.example` to `.env` and add the real values locally. Never commit `.env`, a database URI, or a model API key.
@@ -164,6 +176,6 @@ The visual workflow is also checked at desktop and mobile widths for PDF extract
 
 ## Current boundary
 
-This repository is a **public-low-risk demo implementation using synthetic data**, not a production staffing or hiring decision system. The hosted PostgreSQL, model, and deployment path still requires server-side secret configuration, billing safeguards, live integration verification, and deployment smoke testing. Do not load real client, candidate, or employee information into this MVP.
+This repository is a **public-low-risk demo implementation using synthetic data**, not a production staffing or hiring decision system. The deterministic hosted path requires the documented billing safeguards and deployment smoke tests. PostgreSQL and Gemini remain a separate, disabled path that still requires server-side secrets and live integration verification. Do not load real client, candidate, or employee information into this MVP.
 
 The interface is a tailored concept for a C86 conversation. It is not an official C86 product and does not claim C86 endorsement or ownership.

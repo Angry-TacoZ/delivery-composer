@@ -1,2 +1,1 @@
 """Delivery Composer API package."""
-

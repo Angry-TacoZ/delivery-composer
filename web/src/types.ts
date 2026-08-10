@@ -45,4 +45,3 @@ export interface ComposeResponse {
   retrieval_mode: "postgres_pgvector" | "deterministic_demo";
   generated_at: string;
 }
-

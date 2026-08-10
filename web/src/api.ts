@@ -33,4 +33,3 @@ export async function recordReview(
   });
   if (!response.ok) throw new Error("The review decision could not be recorded.");
 }
-

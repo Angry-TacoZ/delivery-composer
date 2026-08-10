@@ -86,4 +86,3 @@ CONSULTANTS: list[Consultant] = [
         evidence=["Exceeds the clearance threshold and brings SOC operating-model depth."],
     ),
 ]
-

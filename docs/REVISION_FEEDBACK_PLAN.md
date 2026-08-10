@@ -38,4 +38,4 @@ Replace the current terminal `Request revision` state with a real, traceable fee
 - [x] Approval exposes a working new-evaluation path.
 - [x] Duplicate submissions remain guarded while a request is in flight.
 - [x] API tests, frontend build, browser workflow, secret scan, and canonical verifier pass.
-- [ ] PR CI passes on the final pushed commit.
+- [x] PR CI passes on the pushed implementation commit.

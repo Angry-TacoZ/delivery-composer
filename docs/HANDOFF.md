@@ -89,7 +89,8 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Comparison-dialog browser check: opening evidence exposed both scored runners-up; Priya opened against Theo with a `+8 pts` delta and two visible hard-constraint exceptions; Escape closed the dialog; selecting the challenger created the human-override state.
 - Score-audit browser check: the `+8 pts` delta names required capabilities as its driver; Theo renders `58 + 8 + 0 = 66`, Priya renders `58 + 16 + 0 = 74`, and considerations plus eligibility gates are labeled not scored.
 - Revision-loop browser check: empty feedback produced a clear validation error; a stored revision exposed working Change and Re-evaluate actions; role-replacement feedback swapped Data & AI Engineer for Cloud Engineer; prior-result disclosure showed both role deltas; approval exposed Change decision and Start new evaluation.
-- PR #5 canonical verifier: Ruff, 23 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10.
+- PR #5 canonical verifier: Ruff, 24 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10.
+- GitHub Actions on draft PR #5: API lint/tests and web production build pass.
 
 # Next task
 

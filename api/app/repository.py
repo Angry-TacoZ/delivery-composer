@@ -21,7 +21,8 @@ CLEARANCE_RANK = {"baseline": 1, "sc": 2, "dv": 3}
 
 def _constraint_checks(consultant: Consultant, requirements: BriefRequirements) -> list[ConstraintCheck]:
     clearance_passes = CLEARANCE_RANK[consultant.clearance] >= CLEARANCE_RANK[requirements.minimum_clearance]
-    availability_passes = consultant.availability_date <= date(2026, 9, 7)
+    latest_start = requirements.target_start or date(2026, 9, 7)
+    availability_passes = consultant.availability_date <= latest_start
     skill_overlap = sorted(set(consultant.skills).intersection(requirements.required_skills))
     return [
         ConstraintCheck(
@@ -32,7 +33,10 @@ def _constraint_checks(consultant: Consultant, requirements: BriefRequirements) 
         ConstraintCheck(
             label="Availability",
             passed=availability_passes,
-            evidence=f"Available {consultant.availability_date.isoformat()} before the delivery start window.",
+            evidence=(
+                f"Available {consultant.availability_date.isoformat()}; "
+                f"required by {latest_start.isoformat()}."
+            ),
         ),
         ConstraintCheck(
             label="Relevant capability",
@@ -124,7 +128,7 @@ class PostgresRepository:
                 {
                     "vector": vector,
                     "minimum_clearance": min_rank,
-                    "latest_start": date(2026, 9, 7),
+                    "latest_start": requirements.target_start or date(2026, 9, 7),
                     "required_skills": required_skills,
                 },
             )

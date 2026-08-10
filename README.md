@@ -28,6 +28,20 @@ The product journey mirrors [C86's IDEAL methodology](https://www.c86.tech/metho
 
 The stage strip reflects the real workflow state. In deterministic preview mode, Learn feedback is retained only for the current API process lifetime and is labeled `session`. When the live database and Gemini path are both configured, compositions and reviews are stored in PostgreSQL and labeled `postgres`. Neither path claims autonomous model training.
 
+## Demo brief library and PDF-ready boundary
+
+Today's meeting interface opens a backend-served library of three synthetic client briefs. Selecting one loads its editable text, reference, and sector into the same evaluator used by manual entry. This keeps the walkthrough quick and repeatable without implying that real client documents are being processed.
+
+The FastAPI service retains a bounded PDF extraction adapter for a greenlit version: one `.pdf`, `application/pdf`, valid PDF signature, at most 2 MiB and five pages, no encryption, and searchable text only. The endpoint does not persist uploaded bytes or extracted text, but it is not exposed by today's meeting UI.
+
+Three polished synthetic briefs are available under [`output/pdf/`](output/pdf/README.md):
+
+- Critical infrastructure cyber resilience -> Theo Morgan, Maya Patel, Amina Okafor.
+- Financial services AI governance -> Theo Morgan, Amina Okafor, Elena Rossi.
+- Media and broadcast platform recovery -> Theo Morgan, Jon Bell, Elena Rossi.
+
+These cases produce different titles, skills, sectors, target dates, roles, summaries, and ordered teams in deterministic preview mode. Regenerate the PDFs with `scripts/generate_mock_briefs.py`.
+
 ## What the demo proves
 
 - A realistic client brief can be converted into a three-person delivery recommendation.
@@ -38,6 +52,14 @@ The stage strip reflects the real workflow state. In deterministic preview mode,
 
 ## Architecture
 
+Today's meeting build deliberately runs the no-cost deterministic path:
+
+```text
+React -> FastAPI -> deterministic requirements and ranking -> API-session review storage
+```
+
+The same FastAPI service owns the planned live adapters:
+
 ```text
 React + Firebase Hosting
           |
@@ -47,7 +69,12 @@ FastAPI on Cloud Run ---- Gemini API (server-side only)
           |
           v
 Aiven PostgreSQL + pgvector
+
+Demo library -> typed FastAPI response -> editable brief text
+Future PDF -> FastAPI validation + pypdf extraction -> same brief contract
 ```
+
+`DEMO_MODE=true` is an enforced execution boundary: PostgreSQL and Gemini adapters are not initialized even if credentials happen to exist. The live path is enabled only by setting `DEMO_MODE=false` with both server-side credentials; incomplete live configuration fails at startup instead of silently producing a hybrid result. See [`docs/TODAYS_DEMO.md`](docs/TODAYS_DEMO.md) for the meeting walkthrough and upgrade boundary.
 
 The browser never receives the Aiven connection URI or Gemini API key. FastAPI validates the brief, bounds request size, and owns all database and model-provider access.
 
@@ -95,7 +122,7 @@ Open `http://127.0.0.1:5173` and run the populated sample brief.
 
 Copy `.env.example` to `.env` and add the real values locally. Never commit `.env`, a database URI, or a model API key.
 
-After `DATABASE_URL` and `GEMINI_API_KEY` are available server-side:
+After `DATABASE_URL` and `GEMINI_API_KEY` are available server-side, set `DEMO_MODE=false` and run:
 
 ```powershell
 Push-Location api
@@ -116,7 +143,7 @@ Run the same required checks used by the repository contract:
 npm.cmd --prefix web run build
 ```
 
-The visual workflow is also checked at desktop and mobile widths for composition, evidence expansion, IDEAL stage transitions, review recording, console errors, unintended overflow, and the animated trajectory field. See [`docs/design-qa.md`](docs/design-qa.md).
+The visual workflow is also checked at desktop and mobile widths for PDF extraction, composition, evidence expansion, IDEAL stage transitions, review recording, console errors, unintended overflow, and the animated trajectory field. See [`docs/design-qa.md`](docs/design-qa.md) and [`docs/pdf-qa.md`](docs/pdf-qa.md).
 
 ## Current boundary
 

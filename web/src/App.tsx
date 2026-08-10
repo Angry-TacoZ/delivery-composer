@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { composeTeam, fetchDemoBrief, recordReview } from "./api";
-import type { ComposeResponse, ReviewResponse, TeamAssignment } from "./types";
+import { composeTeam, fetchDemoBriefs, recordReview } from "./api";
+import type { ComposeResponse, DemoBrief, ReviewResponse, TeamAssignment } from "./types";
 
 const FALLBACK_BRIEF = `Build a three-person delivery team for a critical-infrastructure resilience programme.
 The client needs a security-first discovery and implementation plan covering zero trust,
@@ -69,9 +69,25 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [reviewState, setReviewState] = useState<ReviewResponse | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [isReviewSaving, setIsReviewSaving] = useState(false);
+  const reviewSaveInFlight = useRef(false);
+  const [demoBriefs, setDemoBriefs] = useState<DemoBrief[]>([]);
+  const [selectedDemoBrief, setSelectedDemoBrief] = useState<DemoBrief | null>(null);
+  const [briefSourceEdited, setBriefSourceEdited] = useState(false);
+  const [isBriefLibraryOpen, setIsBriefLibraryOpen] = useState(false);
+  const [briefLibraryError, setBriefLibraryError] = useState<string | null>(null);
 
   useEffect(() => {
-    void fetchDemoBrief().then(setBrief).catch(() => undefined);
+    void fetchDemoBriefs()
+      .then((briefs) => {
+        setDemoBriefs(briefs);
+        const firstBrief = briefs[0];
+        if (firstBrief) {
+          setSelectedDemoBrief(firstBrief);
+          setBrief(firstBrief.brief);
+        }
+      })
+      .catch(() => setBriefLibraryError("The synthetic brief library could not be loaded."));
   }, []);
 
   const processLabel = useMemo(() => {
@@ -100,12 +116,51 @@ export default function App() {
     }
   }
 
+  function resetEvaluation() {
+    setResult(null);
+    setReviewState(null);
+    setReviewNotes("");
+  }
+
+  function restoreSample() {
+    const firstBrief = demoBriefs[0];
+    setBrief(firstBrief?.brief ?? FALLBACK_BRIEF);
+    setSelectedDemoBrief(firstBrief ?? null);
+    setBriefSourceEdited(false);
+    setIsBriefLibraryOpen(false);
+    setError(null);
+    resetEvaluation();
+  }
+
+  function editBrief(nextBrief: string) {
+    setBrief(nextBrief);
+    if (selectedDemoBrief) setBriefSourceEdited(true);
+    setError(null);
+    resetEvaluation();
+  }
+
+  function chooseDemoBrief(demoBrief: DemoBrief) {
+    setBrief(demoBrief.brief);
+    setSelectedDemoBrief(demoBrief);
+    setBriefSourceEdited(false);
+    setIsBriefLibraryOpen(false);
+    setError(null);
+    resetEvaluation();
+  }
+
   async function submitReview(status: "approved" | "needs_changes") {
-    if (!result) return;
+    if (!result || reviewState || reviewSaveInFlight.current) return;
+
+    reviewSaveInFlight.current = true;
+    setIsReviewSaving(true);
+    setError(null);
     try {
       setReviewState(await recordReview(result.run_id, status, reviewNotes.trim()));
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Review could not be saved.");
+    } finally {
+      reviewSaveInFlight.current = false;
+      setIsReviewSaving(false);
     }
   }
 
@@ -159,14 +214,66 @@ export default function App() {
           <section className="brief-pane">
             <div className="pane-heading">
               <span>Identify / Client brief</span>
-              <button onClick={() => setBrief(FALLBACK_BRIEF)} className="text-button">Restore sample</button>
+              <button onClick={restoreSample} className="text-button">Restore sample</button>
             </div>
+            <div className="brief-source-row">
+              <div className="brief-source-copy" id="brief-source-note">
+                <span>Brief source</span>
+                <strong>{selectedDemoBrief ? selectedDemoBrief.title : "Manual text"}</strong>
+                <small>
+                  {selectedDemoBrief
+                    ? `${selectedDemoBrief.reference} · ${selectedDemoBrief.sector}${briefSourceEdited ? " · edited" : ""}`
+                    : "Paste a concise brief or choose a synthetic scenario."}
+                </small>
+              </div>
+              <button
+                className="brief-library-trigger"
+                type="button"
+                onClick={() => setIsBriefLibraryOpen((open) => !open)}
+                disabled={isRunning}
+                aria-expanded={isBriefLibraryOpen}
+                aria-controls="demo-brief-library"
+              >
+                {isBriefLibraryOpen ? "Close library" : "Choose demo brief"}
+              </button>
+            </div>
+            {isBriefLibraryOpen && (
+              <div className="brief-library" id="demo-brief-library">
+                <div className="brief-library-heading">
+                  <span>Simulated client briefs</span>
+                  <span>{demoBriefs.length} scenarios</span>
+                </div>
+                {briefLibraryError ? (
+                  <p className="brief-library-error" role="alert">{briefLibraryError}</p>
+                ) : demoBriefs.map((demoBrief, index) => (
+                  <button
+                    type="button"
+                    className="brief-library-item"
+                    key={demoBrief.slug}
+                    onClick={() => chooseDemoBrief(demoBrief)}
+                    disabled={isRunning}
+                    aria-pressed={selectedDemoBrief?.slug === demoBrief.slug}
+                  >
+                    <span className="brief-library-index">0{index + 1}</span>
+                    <span className="brief-library-copy">
+                      <strong>{demoBrief.title}</strong>
+                      <small>{demoBrief.reference} · {demoBrief.sector}</small>
+                    </span>
+                    <span className="brief-library-state">
+                      {selectedDemoBrief?.slug === demoBrief.slug ? "Selected" : "Load brief"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
             <label htmlFor="client-brief">Engagement requirements</label>
             <textarea
               id="client-brief"
               value={brief}
-              onChange={(event) => setBrief(event.target.value)}
+              onChange={(event) => editBrief(event.target.value)}
               maxLength={1600}
+              disabled={isRunning}
+              aria-describedby="brief-source-note"
             />
             <div className="brief-meta">
               <span>{brief.length} / 1600 characters</span>
@@ -175,7 +282,7 @@ export default function App() {
             <button className="compose-button" onClick={runComposition} disabled={isRunning || brief.trim().length < 40}>
               {isRunning ? "Composing evidence…" : "Compose delivery team"}
             </button>
-            <p className="action-note">Runs against synthetic consultant profiles for this demonstration.</p>
+            <p className="action-note">Meeting mode uses synthetic briefs. A greenlit workflow can accept searchable PDFs through the same validated evaluation contract.</p>
             {error && <p className="error-message" role="alert">{error}</p>}
           </section>
 
@@ -227,17 +334,18 @@ export default function App() {
                 value={reviewNotes}
                 onChange={(event) => setReviewNotes(event.target.value)}
                 maxLength={600}
-                disabled={reviewState !== null}
+                disabled={reviewState !== null || isReviewSaving}
                 placeholder="Capture a lesson, missing capability, or reason for the decision."
               />
               <div className="review-notes-meta">
                 <span>{reviewNotes.length} / 600</span>
                 <span>{result.retrieval_mode === "postgres_pgvector" ? "Stored with the run" : "Current API session"}</span>
               </div>
-              <div className="decision-buttons">
-                <button onClick={() => void submitReview("approved")} className="approve-button" disabled={reviewState !== null}>Approve proposed team</button>
-                <button onClick={() => void submitReview("needs_changes")} className="revise-button" disabled={reviewState !== null}>Request revision</button>
+              <div className="decision-buttons" aria-busy={isReviewSaving}>
+                <button onClick={() => void submitReview("approved")} className="approve-button" disabled={reviewState !== null || isReviewSaving}>Approve proposed team</button>
+                <button onClick={() => void submitReview("needs_changes")} className="revise-button" disabled={reviewState !== null || isReviewSaving}>Request revision</button>
               </div>
+              {isReviewSaving && <span className="review-saving" role="status">Saving decision...</span>}
               {reviewState && (
                 <span className="review-confirmation">
                   {reviewState.status === "approved" ? "Team approved" : "Revision requested"}. Feedback stored {reviewState.persistence_mode === "postgres" ? "in PostgreSQL" : "for this API session"}.

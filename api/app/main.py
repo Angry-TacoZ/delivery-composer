@@ -1,14 +1,23 @@
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from time import monotonic
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import Settings, get_settings
-from .demo_data import DEMO_BRIEF
-from .domain import BriefInput, ComposeResponse, ReviewInput, ReviewResponse
+from .domain import (
+    BriefInput,
+    ComposeResponse,
+    DemoBriefResponse,
+    PDFBriefResponse,
+    ReviewInput,
+    ReviewResponse,
+)
+from .mock_briefs import MOCK_BRIEFS
+from .pdf_briefs import MAX_PDF_BYTES, PDFBriefError, extract_pdf_brief
 from .service import ComposerService
 
 
@@ -36,6 +45,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         requests=active_settings.rate_limit_requests,
         window_seconds=active_settings.rate_limit_window_seconds,
     )
+    extraction_limiter = RequestRateLimiter(
+        requests=active_settings.rate_limit_requests * 2,
+        window_seconds=active_settings.rate_limit_window_seconds,
+    )
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -61,14 +74,39 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def health() -> dict[str, str | bool]:
         return {
             "status": "ok",
+            "execution_mode": active_settings.execution_mode,
             "database_configured": bool(active_settings.database_url),
             "gemini_configured": active_settings.has_gemini,
+            "live_path_configured": active_settings.live_path_configured,
             "demo_mode": active_settings.demo_mode,
         }
 
-    @app.get("/api/demo-brief")
-    def demo_brief() -> dict[str, str]:
-        return {"brief": DEMO_BRIEF}
+    @app.get("/api/demo-briefs", response_model=list[DemoBriefResponse])
+    def demo_briefs() -> list[DemoBriefResponse]:
+        return [DemoBriefResponse.model_validate(brief) for brief in MOCK_BRIEFS]
+
+    @app.post("/api/extract-brief", response_model=PDFBriefResponse)
+    def extract_brief(
+        request: Request,
+        file: Annotated[UploadFile, File()],
+    ) -> PDFBriefResponse:
+        client_ip = request.client.host if request.client else "unknown"
+        if not extraction_limiter.allow(client_ip):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="PDF extraction limit reached. Please wait before uploading another brief.",
+            )
+        try:
+            content = file.file.read(MAX_PDF_BYTES + 1)
+            return extract_pdf_brief(
+                file_name=file.filename,
+                content_type=file.content_type,
+                content=content,
+            )
+        except PDFBriefError as error:
+            raise HTTPException(status_code=error.status_code, detail=error.detail) from error
+        finally:
+            file.file.close()
 
     @app.post("/api/compose", response_model=ComposeResponse)
     def compose(brief_input: BriefInput, request: Request) -> ComposeResponse:

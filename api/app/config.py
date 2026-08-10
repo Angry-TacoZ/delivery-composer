@@ -36,6 +36,18 @@ class Settings(BaseSettings):
     def has_gemini(self) -> bool:
         return self.gemini_api_key is not None and bool(self.gemini_api_key.get_secret_value())
 
+    @property
+    def live_path_configured(self) -> bool:
+        return bool(self.database_url) and self.has_gemini
+
+    @property
+    def live_path_enabled(self) -> bool:
+        return not self.demo_mode and self.live_path_configured
+
+    @property
+    def execution_mode(self) -> str:
+        return "postgres_pgvector_gemini" if self.live_path_enabled else "deterministic_demo"
+
 
 @lru_cache
 def get_settings() -> Settings:

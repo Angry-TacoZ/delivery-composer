@@ -1,6 +1,7 @@
 import json
 import re
 from collections.abc import Sequence
+from datetime import date
 
 from google import genai
 from google.genai import types
@@ -16,7 +17,7 @@ class AnalysisProvider:
         self.settings = settings
         self.client = (
             genai.Client(api_key=settings.gemini_api_key.get_secret_value())
-            if settings.has_gemini
+            if settings.live_path_enabled
             else None
         )
 
@@ -66,10 +67,12 @@ class AnalysisProvider:
         self, requirements: BriefRequirements, assignments: list[TeamAssignment]
     ) -> tuple[str, list[str]]:
         """Return evidence-grounded prose without allowing the model to alter scores or checks."""
+        roles = ", ".join(assignment.role_on_team for assignment in assignments)
+        capabilities = ", ".join(requirements.required_skills[:4])
         fallback_summary = (
-            "The proposed team covers delivery leadership, zero-trust architecture, and "
-            "governed AI/security-operations delivery. Every selected consultant passes the "
-            "recorded availability and clearance checks."
+            f"The proposed {roles} team covers the recorded priorities of {capabilities}. "
+            "The recommendation keeps availability, clearance, and evidence checks visible "
+            "for human assurance."
         )
         fallback_explanations = [
             f"{assignment.consultant.name} is recommended because the verified profile evidence "
@@ -114,31 +117,76 @@ class AnalysisProvider:
     @staticmethod
     def _deterministic_requirements(brief: str) -> BriefRequirements:
         normalized = brief.lower()
+        searchable = re.sub(r"[-_/]+", " ", normalized)
         skills = []
         for label, triggers in {
             "zero trust": ("zero trust", "identity"),
             "cloud transformation": ("cloud", "platform"),
             "data governance": ("data governance", "governed data"),
             "security operations": ("security operations", "soc", "threat detection"),
-            "ai engineering": ("ai", "retrieval", "automation"),
+            "ai engineering": (
+                "artificial intelligence",
+                "ai enabled",
+                "ai assisted",
+                "ai engineering",
+                "retrieval",
+                "automation",
+            ),
+            "platform engineering": ("platform engineering", "terraform", "infrastructure as code"),
+            "incident response": ("incident response", "service recovery", "major incident"),
         }.items():
-            if any(trigger in normalized for trigger in triggers):
+            if any(trigger in searchable for trigger in triggers):
                 skills.append(label)
         if not skills:
             skills = ["delivery leadership", "cloud transformation"]
 
-        clearance = "dv" if re.search(r"\bdv\b", normalized) else "sc" if re.search(r"\bsc\b", normalized) else "baseline"
+        clearance = (
+            "dv"
+            if re.search(r"\bdv\b", searchable)
+            else "sc"
+            if re.search(r"\bsc\b", searchable)
+            else "baseline"
+        )
+        sector_triggers = {
+            "critical infrastructure": ("critical infrastructure", "national infrastructure"),
+            "public sector": ("public sector", "central government"),
+            "financial services": ("financial services", "bank", "insurance"),
+            "media": ("media", "broadcast"),
+            "transport": ("transport", "rail", "aviation"),
+            "defence": ("defence", "defense"),
+        }
         sectors = [
             sector
-            for sector in ("critical infrastructure", "public sector", "financial services")
-            if sector in normalized
+            for sector, triggers in sector_triggers.items()
+            if any(trigger in searchable for trigger in triggers)
         ]
+
+        start_match = re.search(r"\b20\d{2}-\d{2}-\d{2}\b", normalized)
+        target_start = date.fromisoformat(start_match.group()) if start_match else date(2026, 9, 7)
+
+        if "media" in sectors:
+            title = "Media and broadcast platform recovery team"
+            requested_roles = ["Delivery Lead", "Cloud Engineer", "Security Consultant"]
+        elif "financial services" in sectors:
+            title = "Financial services AI governance delivery team"
+            requested_roles = ["Delivery Lead", "Data & AI Engineer", "Security Consultant"]
+        elif "critical infrastructure" in sectors or "public sector" in sectors:
+            title = "Critical infrastructure resilience delivery team"
+            requested_roles = ["Delivery Lead", "Security Architect", "Data & AI Engineer"]
+        else:
+            title = "Multi-sector technology delivery team"
+            requested_roles = ["Delivery Lead", "Cloud Engineer", "Data & AI Engineer"]
+
         return BriefRequirements(
-            title="Critical infrastructure resilience delivery team",
+            title=title,
             required_skills=skills,
             preferred_sectors=sectors,
             minimum_clearance=clearance,
-            requested_roles=["Delivery Lead", "Security Architect", "Data & AI Engineer"],
-            constraints=["Start within four weeks", "Use verified profile evidence"],
+            target_start=target_start,
+            requested_roles=requested_roles,
+            constraints=[
+                f"Available by {target_start.isoformat()}",
+                "Use verified profile evidence",
+            ],
             extraction_source="deterministic_demo",
         )

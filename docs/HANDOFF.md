@@ -4,9 +4,9 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 # Current status
 
-The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 through PR #5 are merged; PR #5's squash commit is `73eb3b9c83881cbd159656f3d3e3f19478979983`. Draft PR #6 now targets `main` for Americas-facing copy localization.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 through PR #6 are merged; PR #6's squash commit is `8eb94ea9017131b1654d443db854a62ab2f5b31f`. Draft PR #7 targets `main` for deterministic Cloud Run and Firebase Hosting deployment preparation.
 
-The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. Today's build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and Google Cloud billing are ready.
+The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp-4d5c0` is on Blaze, and Aiven PostgreSQL service `delivery-composer-db` exists but remains disabled for today's deployment. The build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and integration verification are ready.
 
 # Decisions
 
@@ -31,6 +31,8 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Recorded decisions always expose a next action. Revision feedback must be actionable, is linked to a reviewed parent run, can alter deterministic role composition, and remains inspectable through a prior-result delta.
 - Recorded review notes are authoritative for revisions: the server rejects browser-submitted feedback that differs from the stored `needs_changes` notes, then uses the stored value for analysis, lineage, and persistence.
 - Meeting-facing synthetic briefs, candidate evidence, and generated PDF artifacts use American English because the audience is C86's President of the Americas; input parsing continues to accept UK and US sector spellings.
+- The public meeting target is `composer.jamesai.space`, backed first by verified Firebase Hosting and a deterministic Cloud Run API in project `composermvp-4d5c0`.
+- The meeting API scales to zero, is capped at one instance, runs as a dedicated no-role service account, and rejects deployment unless a budget alert has been confirmed.
 
 # Changed files
 
@@ -62,6 +64,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - `api/app/service.py` and `api/app/repository.py`: server-authoritative revision feedback retrieval and exact-match enforcement across session and PostgreSQL repositories.
 - `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: actionable recorded-decision state, re-evaluation, corrected decisions, and interactive prior-result delta.
 - `api/app/mock_briefs.py`, `api/app/demo_data.py`, `web/src/App.tsx`, and `output/pdf/`: Americas-localized synthetic briefs, candidate evidence, fallback copy, and regenerated demo artifacts.
+- `.firebaserc`, `api/Dockerfile`, `api/.gcloudignore`, `scripts/deploy-demo.ps1`, and `docs/DEPLOYMENT.md`: correct project binding, non-root bounded source packaging, ordered deployment automation, live smoke tests, custom-domain instructions, and rollback guidance.
 
 # Verification
 
@@ -101,17 +104,22 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - PR #5 merge check: local `main` matches `origin/main` at `73eb3b9c83881cbd159656f3d3e3f19478979983`; PR #6 was rebased onto that commit.
 - PR #6 canonical verifier: Ruff, 25 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10.
 - PR #6 rendered-copy check: critical-infrastructure and media briefs display `program`; the critical-infrastructure brief displays `modernize`. Historical Vite hot-reload errors from branch switching remained in the browser log, but a clean reload rendered correctly and the production build passed.
+- PR #7 canonical verifier: Ruff, 25 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10.
+- PR #7 container smoke test: the rebuilt image runs as non-root user `app`; `/api/health` reports deterministic demo mode with PostgreSQL and Gemini unconfigured.
+- PR #7 deployment guards: PowerShell syntax, required budget confirmation, installed Google Cloud CLI resolution, and clean-`main` branch enforcement pass.
+- Firebase project visibility: authenticated CLI access confirmed active project `composermvp-4d5c0` and project number `848341309407`; the session was then revoked for credential containment and must be re-established without printing token-bearing JSON.
 
 # Next task
 
-1. Obtain external review for draft PR #6, address actionable feedback, and merge.
-2. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run, review, and revision persistence.
-3. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
+1. Review and merge draft PR #7.
+2. Confirm a low Cloud Billing budget alert, authenticate Google Cloud and Firebase CLIs, then run the ordered deployment from clean `main`.
+3. Verify the default Hosting URL and API rewrite, connect `composer.jamesai.space`, and verify DNS plus HTTPS.
+4. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run, review, and revision persistence.
 
 # Risks or blockers
 
 - Readiness status: `NOT PRODUCTION-READY` for public hosting until billing, server-side secrets, live database/model verification, deployment smoke tests, and rollback checks are complete.
-- Google Cloud CLI is not installed yet and Blaze billing must be linked before Cloud Run deployment.
+- Google Cloud CLI 579.0.0 is installed. Firebase access to `composermvp-4d5c0` was confirmed, then the CLI session was revoked after a diagnostic exposed OAuth material in terminal output; deployment requires a fresh non-printing Firebase login and Google Cloud authentication.
 - Public access is intentionally low-risk only: anonymous requests are bounded but not authenticated, and the rate limiter is per Cloud Run instance. Do not use real client or personnel data.
 - The generated visual is C86-inspired concept art; it is not an official brand asset.
 - PDF parsing is a demonstration boundary, not a production document-security pipeline: OCR, antivirus scanning, content disarm, parser isolation, and persistent document lifecycle controls are out of scope.

@@ -27,14 +27,25 @@ export interface Consultant {
   skills: string[];
   sectors: string[];
   evidence: string[];
+  considerations: string[];
 }
 
-export interface TeamAssignment {
+export interface CandidateOption {
   consultant: Consultant;
-  role_on_team: string;
   semantic_score: number;
+  score_method: "deterministic_rubric" | "pgvector_similarity";
+  score_breakdown: Array<{
+    label: string;
+    points: number;
+    evidence: string;
+  }>;
   hard_constraints: ConstraintCheck[];
   explanation: string;
+}
+
+export interface TeamAssignment extends CandidateOption {
+  role_on_team: string;
+  alternatives: CandidateOption[];
 }
 
 export interface ComposeResponse {
@@ -50,7 +61,14 @@ export interface ReviewResponse {
   run_id: string;
   status: "approved" | "needs_changes";
   persistence_mode: "session" | "postgres";
+  override_count: number;
   recorded_at: string;
+}
+
+export interface TeamOverride {
+  role: string;
+  original_consultant_id: string;
+  selected_consultant_id: string;
 }
 
 export interface PDFBriefResponse {

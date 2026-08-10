@@ -119,7 +119,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             return service.compose(brief_input)
         except ValueError as error:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(error)) from error
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error)) from error
         except RuntimeError as error:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Analysis service is unavailable.") from error
 
@@ -133,10 +133,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Composition run not found in the current session.",
             ) from error
+        except ValueError as error:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=str(error),
+            ) from error
         return ReviewResponse(
             run_id=run_id,
             status=review.status,
             persistence_mode=persistence_mode,
+            override_count=len(review.overrides),
         )
 
     return app

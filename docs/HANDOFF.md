@@ -4,7 +4,7 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 # Current status
 
-The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 was merged after external review. Draft PR #2 aligns the workflow with C86's IDEAL methodology. Stacked draft PR #3 targets the PR #2 branch and adds bounded PDF ingestion plus three distinct synthetic demonstration briefs.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1, PR #2, and PR #3 are merged; PR #3's squash commit is `3d3de3c53cf1fc671d70593454e58b256814a83f`. Draft PR #4 now targets `main` and adds the fifteen-profile comparison and manual-override workflow.
 
 The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. Today's build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and Google Cloud billing are ready.
 
@@ -24,6 +24,10 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - The deterministic preview now derives sector-specific roles, target dates, summaries, and ordered teams for critical-infrastructure, financial-services, and media/broadcast scenarios.
 - `DEMO_MODE=true` now enforces adapter isolation even when credentials exist; `DEMO_MODE=false` fails fast unless both PostgreSQL and Gemini are configured.
 - The brief library uses full-width editorial rows with explicit synthetic references and sectors; it does not imitate or claim a real upload.
+- The synthetic roster contains three exact-role candidates for each of five role families. Hard-gate-eligible recommendations are presented first, while all alternatives retain visible positive evidence and considerations.
+- Human overrides are advisory decisions, not constraint rewrites: clearance and availability exceptions remain visible, and review identifiers are validated against the stored composition run.
+- Opening an assignment reveals both scored runners-up. Each runner opens a native current-versus-challenger comparison dialog with RPG-style score deltas, evidence, concerns, constraints, and the override action.
+- Deterministic comparison scores are server-attributed as a 58-point exact-role baseline, 8 points per required-capability match, and 5 points per preferred-sector match. Narrative considerations and eligibility gates are explicitly not scored.
 
 # Changed files
 
@@ -46,6 +50,10 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - `api/app/domain.py`, `api/app/main.py`, `web/src/api.ts`, and `web/src/types.ts`: typed synthetic brief-library contract shared across the API boundary.
 - `web/src/App.tsx` and `web/src/styles.css`: accessible inline demo brief selector replacing the meeting UI file picker.
 - `docs/design-qa.md` and `docs/screenshots/`: same-size visual comparison record plus desktop/mobile evidence.
+- `docs/MANUAL_OVERRIDE_PLAN.md`: planning-first comparison, decision-rule, and verification contract for PR #4.
+- `api/app/demo_data.py`, `api/app/domain.py`, `api/app/repository.py`, `api/app/migrations.py`, and `api/app/seed.py`: fifteen fictional profiles, three-option assignments, validated override payloads, and PostgreSQL-ready persistence.
+- `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: scored runners-up, accessible comparison dialog, visible exception selection, override provenance, and review submission.
+- `api/app/domain.py` and `api/app/repository.py`: typed score components and auditable deterministic arithmetic returned with every candidate option.
 
 # Verification
 
@@ -56,13 +64,13 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Responsive check: 390 × 844 viewport passed with no unintended horizontal overflow.
 - Browser console: no warnings or errors during desktop or mobile primary workflow.
 - Ruff: pass.
-- Pytest: 16 passed; two dependency deprecation warnings on local Python 3.14.
+- Pytest: 20 passed; two dependency deprecation warnings on local Python 3.14.
 - Frontend TypeScript/Vite production build: pass.
 - npm production dependency audit: 0 vulnerabilities.
 - Predeploy secret/API exposure scan: pass.
 - Canonical verifier: pass with `PYTHONUTF8=1` on Windows.
 - GitHub Actions on draft PR #2: API lint/tests pass; web production build pass.
-- GitHub Actions on stacked draft PR #3: API lint/tests pass; web production build pass.
+- GitHub Actions on merged PR #3: API lint/tests pass; web production build pass.
 - PDF parser tests: valid, MIME, extension, signature, malformed, oversized, encrypted, image-only, short, overlong, and page-limit cases pass.
 - Actual PDF comparison: 1,054/985/997 extracted characters and three distinct ordered teams.
 - Prior PDF adapter browser workflow: desktop and mobile upload/evaluate/error-recovery passed before the control was intentionally replaced by the synthetic meeting library.
@@ -70,13 +78,18 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Deterministic-mode browser replay: compose, evidence, IDEAL completion, review notes, and session-provenance confirmation passed after adapter isolation changes.
 - Execution-boundary tests: demo mode ignores configured live credentials; live mode rejects missing PostgreSQL or Gemini configuration.
 - Demo-library browser check: three synthetic cases were visible with references and sectors; financial-services selection changed the brief, requirements, roles, scores, and ordered team without layout clipping at the inspected desktop viewport.
+- Manual-override browser check: critical-infrastructure composition returned three Delivery Lead options; the higher-scoring ineligible candidate remained labeled with clearance and date exceptions, selection produced a visible human-override state, and approval confirmed one stored override.
+- Override-reset browser check: restoring the sample and recomposing removed the human-override state.
+- PR #4 canonical verifier: Ruff, 20 API tests, frontend production build, and predeploy secret/API exposure scan all passed on 2026-08-10.
+- GitHub Actions on draft PR #4: API lint/tests and web production build pass.
+- Comparison-dialog browser check: opening evidence exposed both scored runners-up; Priya opened against Theo with a `+8 pts` delta and two visible hard-constraint exceptions; Escape closed the dialog; selecting the challenger created the human-override state.
+- Score-audit browser check: the `+8 pts` delta names required capabilities as its driver; Theo renders `58 + 8 + 0 = 66`, Priya renders `58 + 16 + 0 = 74`, and considerations plus eligibility gates are labeled not scored.
 
 # Next task
 
-1. Obtain external review for draft PR #2, address actionable feedback, and merge.
-2. Retarget stacked draft PR #3 to `main` after PR #2 merges, then obtain external review for the demo brief library and retained PDF boundary.
-3. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run and review persistence.
-4. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
+1. Merge draft PR #4 after its completed external review and passing verification.
+2. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run and review persistence.
+3. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
 
 # Risks or blockers
 
@@ -85,3 +98,4 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Public access is intentionally low-risk only: anonymous requests are bounded but not authenticated, and the rate limiter is per Cloud Run instance. Do not use real client or personnel data.
 - The generated visual is C86-inspired concept art; it is not an official brand asset.
 - PDF parsing is a demonstration boundary, not a production document-security pipeline: OCR, antivirus scanning, content disarm, parser isolation, and persistent document lifecycle controls are out of scope.
+- The PostgreSQL migration, seed, vector ranking, and override upsert are implemented but not yet exercised against the live Aiven service; today's verified path remains deterministic session storage.

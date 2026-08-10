@@ -17,13 +17,14 @@ Replace the current terminal `Request revision` state with a real, traceable fee
 3. A recorded approval exposes `Change decision` and `Start new evaluation`.
 4. A recorded revision exposes `Change decision` and `Re-evaluate with feedback`.
 5. Re-evaluation sends the prior run identifier and bounded revision feedback to FastAPI.
-6. The new composition records its parent run and applied feedback, while the browser preserves the prior response for a compact role/team delta.
-7. In deterministic mode, explicit role-replacement feedback changes the requested role set; live mode supplies the same bounded context to Gemini and pgvector retrieval.
+6. FastAPI requires that feedback to match the recorded review notes and uses the stored notes as the authoritative analysis input.
+7. The new composition records its parent run and applied feedback, while the browser preserves the prior response for a compact role/team delta.
+8. In deterministic mode, explicit role-replacement feedback changes the requested role set; live mode supplies the same bounded context to Gemini and pgvector retrieval.
 
 ## Trust boundaries
 
 - The browser supplies an untrusted prior run ID and revision text.
-- FastAPI validates text shape and length, verifies that the prior run exists, and requires a recorded `needs_changes` review before accepting a revision composition.
+- FastAPI validates text shape and length, verifies that the prior run exists, requires a recorded `needs_changes` review, rejects mismatched submitted feedback, and uses the persisted review notes for composition.
 - PostgreSQL stores the parent run and revision feedback server-side when live mode is enabled.
 - Paid-model credentials remain server-only; deterministic meeting mode makes no external calls.
 
@@ -33,6 +34,7 @@ Replace the current terminal `Request revision` state with a real, traceable fee
 - [x] A revision decision no longer leaves disabled controls as the only visible actions.
 - [x] `Change decision` permits a corrected approval or revision and overwrites the run's current review safely.
 - [x] `Re-evaluate with feedback` creates a new run linked to the reviewed parent run.
+- [x] Submitted revision feedback must match the persisted `needs_changes` notes; mismatches are rejected before analysis.
 - [x] Explicit deterministic role-replacement feedback materially changes the resulting composition.
 - [x] The prior result remains available through an interactive result-delta disclosure.
 - [x] Approval exposes a working new-evaluation path.

@@ -29,6 +29,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Opening an assignment reveals both scored runners-up. Each runner opens a native current-versus-challenger comparison dialog with RPG-style score deltas, evidence, concerns, constraints, and the override action.
 - Deterministic comparison scores are server-attributed as a 58-point exact-role baseline, 8 points per required-capability match, and 5 points per preferred-sector match. Narrative considerations and eligibility gates are explicitly not scored.
 - Recorded decisions always expose a next action. Revision feedback must be actionable, is linked to a reviewed parent run, can alter deterministic role composition, and remains inspectable through a prior-result delta.
+- Recorded review notes are authoritative for revisions: the server rejects browser-submitted feedback that differs from the stored `needs_changes` notes, then uses the stored value for analysis, lineage, and persistence.
 
 # Changed files
 
@@ -57,6 +58,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - `api/app/domain.py` and `api/app/repository.py`: typed score components and auditable deterministic arithmetic returned with every candidate option.
 - `docs/REVISION_FEEDBACK_PLAN.md`: behavior, trust-boundary, and acceptance contract for PR #5.
 - `api/app/domain.py`, `api/app/providers.py`, `api/app/service.py`, `api/app/repository.py`, and `api/app/migrations.py`: bounded revision context, parent-run validation, deterministic role replacement, and PostgreSQL-ready lineage.
+- `api/app/service.py` and `api/app/repository.py`: server-authoritative revision feedback retrieval and exact-match enforcement across session and PostgreSQL repositories.
 - `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: actionable recorded-decision state, re-evaluation, corrected decisions, and interactive prior-result delta.
 
 # Verification
@@ -89,7 +91,8 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Comparison-dialog browser check: opening evidence exposed both scored runners-up; Priya opened against Theo with a `+8 pts` delta and two visible hard-constraint exceptions; Escape closed the dialog; selecting the challenger created the human-override state.
 - Score-audit browser check: the `+8 pts` delta names required capabilities as its driver; Theo renders `58 + 8 + 0 = 66`, Priya renders `58 + 16 + 0 = 74`, and considerations plus eligibility gates are labeled not scored.
 - Revision-loop browser check: empty feedback produced a clear validation error; a stored revision exposed working Change and Re-evaluate actions; role-replacement feedback swapped Data & AI Engineer for Cloud Engineer; prior-result disclosure showed both role deltas; approval exposed Change decision and Start new evaluation.
-- PR #5 canonical verifier: Ruff, 24 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10.
+- PR #5 canonical verifier: Ruff, 25 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10 after revision-feedback trust-boundary hardening.
+- Revision-feedback mismatch regression: a parent with recorded `needs_changes` notes rejects different submitted feedback with HTTP 422; the matching-feedback workflow remains green.
 - GitHub Actions on draft PR #5: API lint/tests and web production build pass.
 - Post-merge stack check: local `main` matches `origin/main` at PR #3's squash commit; rebased PR #4 and PR #5 are mergeable with passing GitHub Actions.
 - PR #4 merge check: local `main` matches `origin/main` at `c876ea944b46876e9e5a71ba5d1a6511a6b0293e`; PR #5 was rebased onto that commit and retargeted to `main`.

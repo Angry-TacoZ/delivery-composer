@@ -353,6 +353,30 @@ def test_revision_feedback_rejects_unreviewed_or_approved_parent_run() -> None:
     assert "recorded revision request" in approved.json()["detail"]
 
 
+def test_revision_feedback_rejects_notes_that_do_not_match_recorded_review() -> None:
+    app = create_app(Settings(demo_mode=True, rate_limit_requests=5))
+    recorded_feedback = "Replace the Data & AI Engineer with a Cloud Engineer for this delivery."
+    submitted_feedback = "Replace the Security Architect with a Security Consultant instead."
+    with TestClient(app) as client:
+        original = client.post("/api/compose", json={"raw_brief": DEMO_BRIEF}).json()
+        review = client.post(
+            f"/api/runs/{original['run_id']}/review",
+            json={"status": "needs_changes", "notes": recorded_feedback},
+        )
+        revised = client.post(
+            "/api/compose",
+            json={
+                "raw_brief": DEMO_BRIEF,
+                "parent_run_id": original["run_id"],
+                "revision_feedback": submitted_feedback,
+            },
+        )
+
+    assert review.status_code == 200
+    assert revised.status_code == 422
+    assert revised.json()["detail"] == "Revision feedback must match the recorded review notes."
+
+
 def test_review_decision_can_be_changed_for_the_same_run() -> None:
     app = create_app(Settings(demo_mode=True))
     with TestClient(app) as client:

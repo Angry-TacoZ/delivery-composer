@@ -193,12 +193,15 @@ class DemoRepository:
         _validate_review_overrides(self.runs[run_id], review)
         self.reviews[run_id] = review
 
-    def validate_revision(self, parent_run_id: UUID) -> None:
+    def validate_revision(self, parent_run_id: UUID, submitted_feedback: str) -> str:
         if parent_run_id not in self.runs:
             raise ValueError("The parent composition run was not found.")
         review = self.reviews.get(parent_run_id)
         if review is None or review.status != "needs_changes":
             raise ValueError("The parent run must have a recorded revision request.")
+        if review.notes != submitted_feedback:
+            raise ValueError("Revision feedback must match the recorded review notes.")
+        return review.notes
 
 
 class PostgresRepository:
@@ -293,11 +296,11 @@ class PostgresRepository:
             )
             connection.commit()
 
-    def validate_revision(self, parent_run_id: UUID) -> None:
+    def validate_revision(self, parent_run_id: UUID, submitted_feedback: str) -> str:
         with self.pool.connection() as connection, connection.cursor() as cursor:
             cursor.execute(
                 """
-                SELECT r.status
+                SELECT r.status, r.notes
                 FROM composition_runs c
                 LEFT JOIN review_decisions r ON r.run_id = c.id
                 WHERE c.id = %s
@@ -309,6 +312,9 @@ class PostgresRepository:
             raise ValueError("The parent composition run was not found.")
         if row[0] != "needs_changes":
             raise ValueError("The parent run must have a recorded revision request.")
+        if row[1] != submitted_feedback:
+            raise ValueError("Revision feedback must match the recorded review notes.")
+        return row[1]
 
     def record_review(self, run_id: UUID, review: ReviewInput) -> None:
         with self.pool.connection() as connection, connection.cursor() as cursor:

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { composeTeam, extractPDFBrief, fetchDemoBrief, recordReview } from "./api";
 import type { ComposeResponse, PDFBriefResponse, ReviewResponse, TeamAssignment } from "./types";
@@ -69,6 +69,8 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [reviewState, setReviewState] = useState<ReviewResponse | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [isReviewSaving, setIsReviewSaving] = useState(false);
+  const reviewSaveInFlight = useRef(false);
   const [pdfSource, setPdfSource] = useState<PDFBriefResponse | null>(null);
   const [pdfSourceEdited, setPdfSourceEdited] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -142,11 +144,18 @@ export default function App() {
   }
 
   async function submitReview(status: "approved" | "needs_changes") {
-    if (!result) return;
+    if (!result || reviewState || reviewSaveInFlight.current) return;
+
+    reviewSaveInFlight.current = true;
+    setIsReviewSaving(true);
+    setError(null);
     try {
       setReviewState(await recordReview(result.run_id, status, reviewNotes.trim()));
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Review could not be saved.");
+    } finally {
+      reviewSaveInFlight.current = false;
+      setIsReviewSaving(false);
     }
   }
 
@@ -293,17 +302,18 @@ export default function App() {
                 value={reviewNotes}
                 onChange={(event) => setReviewNotes(event.target.value)}
                 maxLength={600}
-                disabled={reviewState !== null}
+                disabled={reviewState !== null || isReviewSaving}
                 placeholder="Capture a lesson, missing capability, or reason for the decision."
               />
               <div className="review-notes-meta">
                 <span>{reviewNotes.length} / 600</span>
                 <span>{result.retrieval_mode === "postgres_pgvector" ? "Stored with the run" : "Current API session"}</span>
               </div>
-              <div className="decision-buttons">
-                <button onClick={() => void submitReview("approved")} className="approve-button" disabled={reviewState !== null}>Approve proposed team</button>
-                <button onClick={() => void submitReview("needs_changes")} className="revise-button" disabled={reviewState !== null}>Request revision</button>
+              <div className="decision-buttons" aria-busy={isReviewSaving}>
+                <button onClick={() => void submitReview("approved")} className="approve-button" disabled={reviewState !== null || isReviewSaving}>Approve proposed team</button>
+                <button onClick={() => void submitReview("needs_changes")} className="revise-button" disabled={reviewState !== null || isReviewSaving}>Request revision</button>
               </div>
+              {isReviewSaving && <span className="review-saving" role="status">Saving decision...</span>}
               {reviewState && (
                 <span className="review-confirmation">
                   {reviewState.status === "approved" ? "Team approved" : "Revision requested"}. Feedback stored {reviewState.persistence_mode === "postgres" ? "in PostgreSQL" : "for this API session"}.

@@ -19,6 +19,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Recommendations remain advisory: rules first, semantic retrieval second, human decision always.
 - IDEAL is a stateful product workflow, not a decorative graphic: Identify, Define, Execute, Assure, and Learn map to actual composition and human-review behavior.
 - Demo reviews are retained only for the API process lifetime and labeled `session`; configured live-path reviews are labeled `postgres`.
+- Review submissions use an immediate in-flight guard, disable both decisions and notes while saving, and expose an accessible saving status to prevent rapid duplicate requests.
 - PDF extraction is server-side, non-persistent, limited to one searchable PDF of at most 2 MiB/five pages/1,600 extracted characters, and feeds the same editable evaluator field as manual text.
 - The deterministic preview now derives sector-specific roles, target dates, summaries, and ordered teams for critical-infrastructure, financial-services, and media/broadcast scenarios.
 
@@ -59,6 +60,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - PDF parser tests: valid, MIME, extension, signature, malformed, oversized, encrypted, image-only, short, overlong, and page-limit cases pass.
 - Actual PDF comparison: 1,054/985/997 extracted characters and three distinct ordered teams.
 - PDF browser workflow: desktop and mobile upload/evaluate/error-recovery pass with no console warnings or errors.
+- Review hardening browser check: a rapid double-click completed one approval state and left both decision controls and notes disabled.
 
 # Next task
 

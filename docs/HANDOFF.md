@@ -4,7 +4,7 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 # Current status
 
-The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1, PR #2, and PR #3 are merged; PR #3's squash commit is `3d3de3c53cf1fc671d70593454e58b256814a83f`. Draft PR #4 now targets `main` and adds the fifteen-profile comparison and manual-override workflow.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 through PR #4 are merged; PR #4's squash commit is `c876ea944b46876e9e5a71ba5d1a6511a6b0293e`. Draft PR #5 now targets `main` for the actionable revision feedback loop.
 
 The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. Today's build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and Google Cloud billing are ready.
 
@@ -28,6 +28,8 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Human overrides are advisory decisions, not constraint rewrites: clearance and availability exceptions remain visible, and review identifiers are validated against the stored composition run.
 - Opening an assignment reveals both scored runners-up. Each runner opens a native current-versus-challenger comparison dialog with RPG-style score deltas, evidence, concerns, constraints, and the override action.
 - Deterministic comparison scores are server-attributed as a 58-point exact-role baseline, 8 points per required-capability match, and 5 points per preferred-sector match. Narrative considerations and eligibility gates are explicitly not scored.
+- Recorded decisions always expose a next action. Revision feedback must be actionable, is linked to a reviewed parent run, can alter deterministic role composition, and remains inspectable through a prior-result delta.
+- Recorded review notes are authoritative for revisions: the server rejects browser-submitted feedback that differs from the stored `needs_changes` notes, then uses the stored value for analysis, lineage, and persistence.
 
 # Changed files
 
@@ -54,6 +56,10 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - `api/app/demo_data.py`, `api/app/domain.py`, `api/app/repository.py`, `api/app/migrations.py`, and `api/app/seed.py`: fifteen fictional profiles, three-option assignments, validated override payloads, and PostgreSQL-ready persistence.
 - `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: scored runners-up, accessible comparison dialog, visible exception selection, override provenance, and review submission.
 - `api/app/domain.py` and `api/app/repository.py`: typed score components and auditable deterministic arithmetic returned with every candidate option.
+- `docs/REVISION_FEEDBACK_PLAN.md`: behavior, trust-boundary, and acceptance contract for PR #5.
+- `api/app/domain.py`, `api/app/providers.py`, `api/app/service.py`, `api/app/repository.py`, and `api/app/migrations.py`: bounded revision context, parent-run validation, deterministic role replacement, and PostgreSQL-ready lineage.
+- `api/app/service.py` and `api/app/repository.py`: server-authoritative revision feedback retrieval and exact-match enforcement across session and PostgreSQL repositories.
+- `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: actionable recorded-decision state, re-evaluation, corrected decisions, and interactive prior-result delta.
 
 # Verification
 
@@ -64,7 +70,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Responsive check: 390 × 844 viewport passed with no unintended horizontal overflow.
 - Browser console: no warnings or errors during desktop or mobile primary workflow.
 - Ruff: pass.
-- Pytest: 20 passed; two dependency deprecation warnings on local Python 3.14.
+- Pytest: 24 passed; two dependency deprecation warnings on local Python 3.14.
 - Frontend TypeScript/Vite production build: pass.
 - npm production dependency audit: 0 vulnerabilities.
 - Predeploy secret/API exposure scan: pass.
@@ -84,11 +90,17 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - GitHub Actions on draft PR #4: API lint/tests and web production build pass.
 - Comparison-dialog browser check: opening evidence exposed both scored runners-up; Priya opened against Theo with a `+8 pts` delta and two visible hard-constraint exceptions; Escape closed the dialog; selecting the challenger created the human-override state.
 - Score-audit browser check: the `+8 pts` delta names required capabilities as its driver; Theo renders `58 + 8 + 0 = 66`, Priya renders `58 + 16 + 0 = 74`, and considerations plus eligibility gates are labeled not scored.
+- Revision-loop browser check: empty feedback produced a clear validation error; a stored revision exposed working Change and Re-evaluate actions; role-replacement feedback swapped Data & AI Engineer for Cloud Engineer; prior-result disclosure showed both role deltas; approval exposed Change decision and Start new evaluation.
+- PR #5 canonical verifier: Ruff, 25 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10 after revision-feedback trust-boundary hardening.
+- Revision-feedback mismatch regression: a parent with recorded `needs_changes` notes rejects different submitted feedback with HTTP 422; the matching-feedback workflow remains green.
+- GitHub Actions on draft PR #5: API lint/tests and web production build pass.
+- Post-merge stack check: local `main` matches `origin/main` at PR #3's squash commit; rebased PR #4 and PR #5 are mergeable with passing GitHub Actions.
+- PR #4 merge check: local `main` matches `origin/main` at `c876ea944b46876e9e5a71ba5d1a6511a6b0293e`; PR #5 was rebased onto that commit and retargeted to `main`.
 
 # Next task
 
-1. Merge draft PR #4 after its completed external review and passing verification.
-2. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run and review persistence.
+1. Obtain external review for draft PR #5, address actionable feedback, and merge.
+2. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run, review, and revision persistence.
 3. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
 
 # Risks or blockers
@@ -99,3 +111,4 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - The generated visual is C86-inspired concept art; it is not an official brand asset.
 - PDF parsing is a demonstration boundary, not a production document-security pipeline: OCR, antivirus scanning, content disarm, parser isolation, and persistent document lifecycle controls are out of scope.
 - The PostgreSQL migration, seed, vector ranking, and override upsert are implemented but not yet exercised against the live Aiven service; today's verified path remains deterministic session storage.
+- Revision lineage and feedback columns are migration-ready but have not been applied to or exercised against the live Aiven service.

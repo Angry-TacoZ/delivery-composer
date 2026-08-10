@@ -298,14 +298,18 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [reviewState, setReviewState] = useState<ReviewResponse | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [reviewValidationError, setReviewValidationError] = useState<string | null>(null);
   const [isReviewSaving, setIsReviewSaving] = useState(false);
   const reviewSaveInFlight = useRef(false);
+  const revisionInFlight = useRef(false);
   const [demoBriefs, setDemoBriefs] = useState<DemoBrief[]>([]);
   const [selectedDemoBrief, setSelectedDemoBrief] = useState<DemoBrief | null>(null);
   const [briefSourceEdited, setBriefSourceEdited] = useState(false);
   const [isBriefLibraryOpen, setIsBriefLibraryOpen] = useState(false);
   const [briefLibraryError, setBriefLibraryError] = useState<string | null>(null);
   const [teamOverrides, setTeamOverrides] = useState<Record<string, CandidateOption>>({});
+  const [previousResult, setPreviousResult] = useState<ComposeResponse | null>(null);
+  const [showPreviousResult, setShowPreviousResult] = useState(false);
 
   useEffect(() => {
     void fetchDemoBriefs()
@@ -340,6 +344,33 @@ export default function App() {
     return overrideCount > 0 ? `${mode} · ${overrideCount} human ${overrideCount === 1 ? "override" : "overrides"}` : mode;
   }, [overrideCount, result]);
 
+  const revisionDelta = useMemo(() => {
+    if (!result || !previousResult) return [];
+    const previousTeam = new Map(
+      previousResult.assignments.map((assignment) => [
+        assignment.role_on_team,
+        assignment.consultant.name,
+      ]),
+    );
+    const currentTeam = new Map(
+      result.assignments.map((assignment) => [
+        assignment.role_on_team,
+        assignment.consultant.name,
+      ]),
+    );
+    const changes: string[] = [];
+    for (const [role, name] of previousTeam) {
+      if (!currentTeam.has(role)) changes.push(`Removed ${role} (${name})`);
+      else if (currentTeam.get(role) !== name) {
+        changes.push(`${role}: ${name} → ${currentTeam.get(role)}`);
+      }
+    }
+    for (const [role, name] of currentTeam) {
+      if (!previousTeam.has(role)) changes.push(`Added ${role} (${name})`);
+    }
+    return changes.length > 0 ? changes : ["No role or recommended-person changes detected."];
+  }, [previousResult, result]);
+
   const idealStageStates = useMemo(() => IDEAL_STAGES.map((_, index) => {
     if (reviewState) return "complete";
     if (result) return index < 3 ? "complete" : index === 3 ? "active" : "queued";
@@ -352,7 +383,10 @@ export default function App() {
     setError(null);
     setReviewState(null);
     setReviewNotes("");
+    setReviewValidationError(null);
     setTeamOverrides({});
+    setPreviousResult(null);
+    setShowPreviousResult(false);
     try {
       setResult(await composeTeam(brief));
     } catch (caughtError) {
@@ -366,7 +400,10 @@ export default function App() {
     setResult(null);
     setReviewState(null);
     setReviewNotes("");
+    setReviewValidationError(null);
     setTeamOverrides({});
+    setPreviousResult(null);
+    setShowPreviousResult(false);
   }
 
   function restoreSample() {
@@ -405,16 +442,23 @@ export default function App() {
       }
       return next;
     });
-    setReviewState(null);
+    if (reviewState?.status !== "needs_changes") setReviewState(null);
+    setReviewValidationError(null);
     setError(null);
   }
 
   async function submitReview(status: "approved" | "needs_changes") {
     if (!result || reviewState || reviewSaveInFlight.current) return;
 
+    if (status === "needs_changes" && reviewNotes.trim().length < 10) {
+      setReviewValidationError("Add at least 10 characters describing what should change.");
+      return;
+    }
+
     reviewSaveInFlight.current = true;
     setIsReviewSaving(true);
     setError(null);
+    setReviewValidationError(null);
     try {
       setReviewState(await recordReview(result.run_id, status, reviewNotes.trim(), reviewOverrides));
     } catch (caughtError) {
@@ -422,6 +466,45 @@ export default function App() {
     } finally {
       reviewSaveInFlight.current = false;
       setIsReviewSaving(false);
+    }
+  }
+
+  function changeDecision() {
+    setReviewState(null);
+    setReviewValidationError(null);
+    setError(null);
+  }
+
+  async function reEvaluateWithFeedback() {
+    if (!result || reviewState?.status !== "needs_changes" || revisionInFlight.current) return;
+
+    const feedback = reviewNotes.trim();
+    if (feedback.length < 10) {
+      setReviewValidationError("Add at least 10 characters describing what should change.");
+      return;
+    }
+
+    setIsRunning(true);
+    revisionInFlight.current = true;
+    setError(null);
+    setReviewValidationError(null);
+    const parentResult = result;
+    try {
+      const revisedResult = await composeTeam(brief, {
+        parentRunId: parentResult.run_id,
+        feedback,
+      });
+      setPreviousResult(parentResult);
+      setShowPreviousResult(false);
+      setResult(revisedResult);
+      setReviewState(null);
+      setReviewNotes("");
+      setTeamOverrides({});
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "Revision could not be evaluated.");
+    } finally {
+      revisionInFlight.current = false;
+      setIsRunning(false);
     }
   }
 
@@ -553,6 +636,33 @@ export default function App() {
               <span className="mode-label">{result ? processLabel : "Awaiting brief"}</span>
             </div>
 
+            {result && previousResult && (
+              <div className="revision-delta">
+                <button
+                  type="button"
+                  className="revision-delta-trigger"
+                  onClick={() => setShowPreviousResult((shown) => !shown)}
+                  aria-expanded={showPreviousResult}
+                >
+                  <span>Revision 02 · feedback applied</span>
+                  <span>{showPreviousResult ? "Hide prior result" : "Compare prior result"}</span>
+                </button>
+                {showPreviousResult && (
+                  <div className="revision-delta-detail">
+                    <div>
+                      <span>Applied feedback</span>
+                      <p>{result.revision_feedback}</p>
+                    </div>
+                    <div>
+                      <span>Composition delta</span>
+                      <ul>{revisionDelta.map((change) => <li key={change}>{change}</li>)}</ul>
+                    </div>
+                    <small>Prior run {previousResult.run_id.slice(0, 8)} · Current run {result.run_id.slice(0, 8)}</small>
+                  </div>
+                )}
+              </div>
+            )}
+
             {!result ? (
               <div className="empty-state">
                 <p className="empty-kicker">Ready for analysis</p>
@@ -569,7 +679,7 @@ export default function App() {
                       index={index}
                       selectedOption={teamOverrides[assignment.role_on_team] ?? assignment}
                       onSelect={(option) => selectCandidate(assignment, option)}
-                      disabled={reviewState !== null || isReviewSaving}
+                      disabled={reviewState?.status === "approved" || isReviewSaving}
                     />
                   ))}
                 </div>
@@ -600,31 +710,54 @@ export default function App() {
                   {overrideCount} human {overrideCount === 1 ? "override" : "overrides"} recorded for review. Constraint exceptions remain visible.
                 </p>
               )}
-              <label className="review-notes-label" htmlFor="review-notes">
-                Learn / Review notes <span>Optional</span>
-              </label>
-              <textarea
-                id="review-notes"
-                className="review-notes"
-                value={reviewNotes}
-                onChange={(event) => setReviewNotes(event.target.value)}
-                maxLength={600}
-                disabled={reviewState !== null || isReviewSaving}
-                placeholder="Capture a lesson, missing capability, or reason for the decision."
-              />
-              <div className="review-notes-meta">
-                <span>{reviewNotes.length} / 600</span>
-                <span>{result.retrieval_mode === "postgres_pgvector" ? "Stored with the run" : "Current API session"}</span>
-              </div>
-              <div className="decision-buttons" aria-busy={isReviewSaving}>
-                <button onClick={() => void submitReview("approved")} className="approve-button" disabled={reviewState !== null || isReviewSaving}>Approve proposed team</button>
-                <button onClick={() => void submitReview("needs_changes")} className="revise-button" disabled={reviewState !== null || isReviewSaving}>Request revision</button>
-              </div>
-              {isReviewSaving && <span className="review-saving" role="status">Saving decision...</span>}
-              {reviewState && (
-                <span className="review-confirmation">
-                  {reviewState.status === "approved" ? "Team approved" : "Revision requested"}. Feedback stored {reviewState.persistence_mode === "postgres" ? "in PostgreSQL" : "for this API session"}{reviewState.override_count > 0 ? ` with ${reviewState.override_count} human ${reviewState.override_count === 1 ? "override" : "overrides"}` : ""}.
-                </span>
+              {!reviewState ? (
+                <>
+                  <label className="review-notes-label" htmlFor="review-notes">
+                    Learn / Review notes <span>Required for revision</span>
+                  </label>
+                  <textarea
+                    id="review-notes"
+                    className="review-notes"
+                    value={reviewNotes}
+                    onChange={(event) => {
+                      setReviewNotes(event.target.value);
+                      setReviewValidationError(null);
+                    }}
+                    maxLength={600}
+                    disabled={isReviewSaving}
+                    placeholder="Capture a lesson, missing capability, or reason for the decision."
+                  />
+                  <div className="review-notes-meta">
+                    <span>{reviewNotes.length} / 600</span>
+                    <span>{result.retrieval_mode === "postgres_pgvector" ? "Stored with the run" : "Current API session"}</span>
+                  </div>
+                  {reviewValidationError && <p className="review-validation-error" role="alert">{reviewValidationError}</p>}
+                  <div className="decision-buttons" aria-busy={isReviewSaving}>
+                    <button onClick={() => void submitReview("approved")} className="approve-button" disabled={isReviewSaving}>Approve proposed team</button>
+                    <button onClick={() => void submitReview("needs_changes")} className="revise-button" disabled={isReviewSaving}>Request revision</button>
+                  </div>
+                  {isReviewSaving && <span className="review-saving" role="status">Saving decision...</span>}
+                </>
+              ) : (
+                <div className={`recorded-decision ${reviewState.status}`}>
+                  <div>
+                    <span>{reviewState.status === "approved" ? "Team approved" : "Revision requested"}</span>
+                    <p>
+                      Feedback stored {reviewState.persistence_mode === "postgres" ? "in PostgreSQL" : "for this API session"}{reviewState.override_count > 0 ? ` with ${reviewState.override_count} human ${reviewState.override_count === 1 ? "override" : "overrides"}` : ""}.
+                    </p>
+                    {reviewNotes && <blockquote>{reviewNotes}</blockquote>}
+                  </div>
+                  <div className="recorded-decision-actions">
+                    <button type="button" onClick={changeDecision}>Change decision</button>
+                    {reviewState.status === "needs_changes" ? (
+                      <button type="button" className="primary-next-action" onClick={() => void reEvaluateWithFeedback()} disabled={isRunning}>
+                        {isRunning ? "Re-evaluating…" : "Re-evaluate with feedback"}
+                      </button>
+                    ) : (
+                      <button type="button" className="primary-next-action" onClick={resetEvaluation}>Start new evaluation</button>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           </div>

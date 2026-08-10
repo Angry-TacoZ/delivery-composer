@@ -27,10 +27,26 @@ class ComposerService:
             self.postgres_repository.close()
 
     def compose(self, brief_input: BriefInput) -> ComposeResponse:
-        requirements = self.provider.extract_requirements(brief_input.raw_brief)
+        repository = self.postgres_repository if self.uses_live_path else self.demo_repository
+        revision_feedback = brief_input.revision_feedback
+        if brief_input.parent_run_id is not None:
+            if revision_feedback is None:
+                raise ValueError("Revision feedback is required for a parent composition run.")
+            revision_feedback = repository.validate_revision(
+                brief_input.parent_run_id,
+                revision_feedback,
+            )
+
+        requirements = self.provider.extract_requirements(
+            brief_input.raw_brief,
+            revision_feedback,
+        )
+        retrieval_text = brief_input.raw_brief
+        if revision_feedback:
+            retrieval_text += f"\n\nREVISION FEEDBACK:\n{revision_feedback}"
         if self.uses_live_path:
             assignments = self.postgres_repository.rank(
-                requirements, self.provider.embed_query(brief_input.raw_brief)
+                requirements, self.provider.embed_query(retrieval_text)
             )
             retrieval_mode = "postgres_pgvector"
         else:
@@ -40,6 +56,8 @@ class ComposerService:
         if not assignments:
             raise ValueError("No eligible team could be composed from the available profiles.")
         summary, explanations = self.provider.compose_explanations(requirements, assignments)
+        if revision_feedback:
+            summary = f"Revision feedback applied. {summary}"
         completed_assignments = [
             assignment.model_copy(update={"explanation": explanation})
             for assignment, explanation in zip(assignments, explanations, strict=True)
@@ -49,9 +67,14 @@ class ComposerService:
             assignments=completed_assignments,
             summary=summary,
             retrieval_mode=retrieval_mode,
+            parent_run_id=brief_input.parent_run_id,
+            revision_feedback=revision_feedback,
         )
         if self.uses_live_path:
-            self.postgres_repository.record_run(brief_input.raw_brief, response)
+            authoritative_input = brief_input.model_copy(
+                update={"revision_feedback": revision_feedback}
+            )
+            self.postgres_repository.record_run(authoritative_input, response)
         else:
             self.demo_repository.record_run(response)
         return response

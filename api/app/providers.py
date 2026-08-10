@@ -21,14 +21,21 @@ class AnalysisProvider:
             else None
         )
 
-    def extract_requirements(self, brief: str) -> BriefRequirements:
+    def extract_requirements(
+        self,
+        brief: str,
+        revision_feedback: str | None = None,
+    ) -> BriefRequirements:
         if self.client is None:
-            return self._deterministic_requirements(brief)
+            return self._deterministic_requirements(brief, revision_feedback)
 
         prompt = (
             "Extract delivery-team requirements from this consulting brief. Do not invent "
             "credentials, sectors, dates, or client facts. Normalise skills to concise "
-            "lowercase labels. Return only the requested schema.\n\nBRIEF:\n" + brief
+            "lowercase labels. Apply the bounded revision feedback when present. Return only "
+            "the requested schema.\n\nBRIEF:\n"
+            + brief
+            + (f"\n\nREVISION FEEDBACK:\n{revision_feedback}" if revision_feedback else "")
         )
         response = self.client.models.generate_content(
             model=self.settings.gemini_model,
@@ -115,7 +122,10 @@ class AnalysisProvider:
         return fallback_summary, fallback_explanations
 
     @staticmethod
-    def _deterministic_requirements(brief: str) -> BriefRequirements:
+    def _deterministic_requirements(
+        brief: str,
+        revision_feedback: str | None = None,
+    ) -> BriefRequirements:
         normalized = brief.lower()
         searchable = re.sub(r"[-_/]+", " ", normalized)
         skills = []
@@ -176,6 +186,40 @@ class AnalysisProvider:
         else:
             title = "Multi-sector technology delivery team"
             requested_roles = ["Delivery Lead", "Cloud Engineer", "Data & AI Engineer"]
+
+        if revision_feedback:
+            feedback = " ".join(re.sub(r"[-_/&]+", " ", revision_feedback.lower()).split())
+            if "replace" in feedback and "with" in feedback:
+                before, after = feedback.split("with", 1)
+                role_triggers = {
+                    "Delivery Lead": ("delivery lead",),
+                    "Security Architect": ("security architect",),
+                    "Data & AI Engineer": ("data and ai engineer", "data ai engineer"),
+                    "Cloud Engineer": ("cloud engineer",),
+                    "Security Consultant": ("security consultant",),
+                }
+                replaced_role = next(
+                    (
+                        role
+                        for role, triggers in role_triggers.items()
+                        if any(trigger in before for trigger in triggers)
+                    ),
+                    None,
+                )
+                replacement_role = next(
+                    (
+                        role
+                        for role, triggers in role_triggers.items()
+                        if any(trigger in after for trigger in triggers)
+                    ),
+                    None,
+                )
+                if (
+                    replaced_role in requested_roles
+                    and replacement_role is not None
+                    and replacement_role not in requested_roles
+                ):
+                    requested_roles[requested_roles.index(replaced_role)] = replacement_role
 
         return BriefRequirements(
             title=title,

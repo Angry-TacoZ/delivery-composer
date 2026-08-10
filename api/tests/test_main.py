@@ -279,6 +279,122 @@ def test_demo_review_returns_session_provenance() -> None:
     assert response.json()["override_count"] == 0
 
 
+def test_revision_review_requires_actionable_feedback() -> None:
+    app = create_app(Settings(demo_mode=True))
+    with TestClient(app) as client:
+        composition = client.post("/api/compose", json={"raw_brief": DEMO_BRIEF}).json()
+        response = client.post(
+            f"/api/runs/{composition['run_id']}/review",
+            json={"status": "needs_changes", "notes": "Too vague"},
+        )
+
+    assert response.status_code == 422
+    assert "at least 10 characters" in response.text
+
+
+def test_revision_feedback_creates_linked_run_and_changes_requested_role() -> None:
+    app = create_app(Settings(demo_mode=True, rate_limit_requests=5))
+    feedback = "Replace the Data & AI Engineer with a Cloud Engineer for this delivery."
+    with TestClient(app) as client:
+        original = client.post("/api/compose", json={"raw_brief": DEMO_BRIEF}).json()
+        review = client.post(
+            f"/api/runs/{original['run_id']}/review",
+            json={"status": "needs_changes", "notes": feedback},
+        )
+        revised = client.post(
+            "/api/compose",
+            json={
+                "raw_brief": DEMO_BRIEF,
+                "parent_run_id": original["run_id"],
+                "revision_feedback": feedback,
+            },
+        )
+
+    assert review.status_code == 200
+    assert revised.status_code == 200
+    payload = revised.json()
+    assert payload["run_id"] != original["run_id"]
+    assert payload["parent_run_id"] == original["run_id"]
+    assert payload["revision_feedback"] == feedback
+    assert "Revision feedback applied" in payload["summary"]
+    assert "Data & AI Engineer" in original["requirements"]["requested_roles"]
+    assert "Data & AI Engineer" not in payload["requirements"]["requested_roles"]
+    assert "Cloud Engineer" in payload["requirements"]["requested_roles"]
+
+
+def test_revision_feedback_rejects_unreviewed_or_approved_parent_run() -> None:
+    app = create_app(Settings(demo_mode=True, rate_limit_requests=5))
+    feedback = "Replace the Data & AI Engineer with a Cloud Engineer for this delivery."
+    with TestClient(app) as client:
+        original = client.post("/api/compose", json={"raw_brief": DEMO_BRIEF}).json()
+        unreviewed = client.post(
+            "/api/compose",
+            json={
+                "raw_brief": DEMO_BRIEF,
+                "parent_run_id": original["run_id"],
+                "revision_feedback": feedback,
+            },
+        )
+        client.post(
+            f"/api/runs/{original['run_id']}/review",
+            json={"status": "approved", "notes": "Evidence and constraints checked."},
+        )
+        approved = client.post(
+            "/api/compose",
+            json={
+                "raw_brief": DEMO_BRIEF,
+                "parent_run_id": original["run_id"],
+                "revision_feedback": feedback,
+            },
+        )
+
+    assert unreviewed.status_code == 422
+    assert approved.status_code == 422
+    assert "recorded revision request" in approved.json()["detail"]
+
+
+def test_revision_feedback_rejects_notes_that_do_not_match_recorded_review() -> None:
+    app = create_app(Settings(demo_mode=True, rate_limit_requests=5))
+    recorded_feedback = "Replace the Data & AI Engineer with a Cloud Engineer for this delivery."
+    submitted_feedback = "Replace the Security Architect with a Security Consultant instead."
+    with TestClient(app) as client:
+        original = client.post("/api/compose", json={"raw_brief": DEMO_BRIEF}).json()
+        review = client.post(
+            f"/api/runs/{original['run_id']}/review",
+            json={"status": "needs_changes", "notes": recorded_feedback},
+        )
+        revised = client.post(
+            "/api/compose",
+            json={
+                "raw_brief": DEMO_BRIEF,
+                "parent_run_id": original["run_id"],
+                "revision_feedback": submitted_feedback,
+            },
+        )
+
+    assert review.status_code == 200
+    assert revised.status_code == 422
+    assert revised.json()["detail"] == "Revision feedback must match the recorded review notes."
+
+
+def test_review_decision_can_be_changed_for_the_same_run() -> None:
+    app = create_app(Settings(demo_mode=True))
+    with TestClient(app) as client:
+        composition = client.post("/api/compose", json={"raw_brief": DEMO_BRIEF}).json()
+        first = client.post(
+            f"/api/runs/{composition['run_id']}/review",
+            json={"status": "needs_changes", "notes": "Replace the final role before approval."},
+        )
+        corrected = client.post(
+            f"/api/runs/{composition['run_id']}/review",
+            json={"status": "approved", "notes": "Original team accepted after review."},
+        )
+
+    assert first.status_code == 200
+    assert corrected.status_code == 200
+    assert corrected.json()["status"] == "approved"
+
+
 def test_demo_review_records_a_valid_manual_override() -> None:
     app = create_app(Settings(demo_mode=True))
     with TestClient(app) as client:

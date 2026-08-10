@@ -54,7 +54,8 @@ Live mode fails at startup unless both `DATABASE_URL` and `GEMINI_API_KEY` are c
 3. Open Theo's evidence to reveal Priya and Marcus as scored runners-up, then select Priya's Compare control.
 4. Use the RPG-style current-versus-challenger overlay to audit `Theo: 58 + 8 + 0 = 66` against `Priya: 58 + 16 + 0 = 74`. The delta names Priya's extra required-capability match immediately. Then show that Theo is still recommended because clearance and availability are unscored hard gates; select Priya with the visible exception and point out that the failed constraints remain red instead of being rewritten as a pass.
 5. Add a short review note and approve. The Learn state confirms that one human override was stored for the API session.
-6. Restore the sample or select another brief to show that the override clears and the evaluation changes with the input.
-7. Open the repository architecture and explain the explicit adapter switch to PostgreSQL, pgvector, and Gemini.
+6. Choose `Change decision`, enter `Replace the Data & AI Engineer with a Cloud Engineer for this delivery`, and request a revision.
+7. Select `Re-evaluate with feedback`. Show that the new run contains a Cloud Engineer, then open `Compare prior result` to reveal the removed and added roles plus linked run references.
+8. Open the repository architecture and explain the explicit adapter switch to PostgreSQL, pgvector, and Gemini.
 
 Explain that a greenlit version can expose the existing bounded PDF adapter through the same brief contract. Do not paste real client, candidate, or employee information into the meeting build.

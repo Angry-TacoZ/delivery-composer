@@ -79,8 +79,12 @@ try {
     & $gcloudCommand services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com iam.googleapis.com --quiet
     Assert-LastExitCode "Google Cloud API enablement"
 
-    & $gcloudCommand iam service-accounts describe $runtimeServiceAccount --project $ProjectId 2>$null
-    if ($LASTEXITCODE -ne 0) {
+    $existingRuntimeAccount = & $gcloudCommand iam service-accounts list `
+        --project $ProjectId `
+        --filter "email=$runtimeServiceAccount" `
+        --format "value(email)"
+    Assert-LastExitCode "Runtime service account lookup"
+    if (-not $existingRuntimeAccount) {
         & $gcloudCommand iam service-accounts create delivery-composer-runtime `
             --project $ProjectId `
             --display-name "Delivery Composer runtime" `

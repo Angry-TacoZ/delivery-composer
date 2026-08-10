@@ -4,7 +4,7 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 # Current status
 
-The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 and PR #2 are merged; PR #2's squash commit is `3fa9afb410694bad2d9aede9cfdebae2f51a6f96`. Draft PR #3 now targets `main` and adds bounded PDF ingestion plus three distinct synthetic demonstration briefs. Draft PR #4 is stacked on PR #3 and adds the fifteen-profile comparison and manual-override workflow.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1, PR #2, and PR #3 are merged; PR #3's squash commit is `3d3de3c53cf1fc671d70593454e58b256814a83f`. Draft PR #4 now targets `main` and adds the fifteen-profile comparison and manual-override workflow.
 
 The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. Today's build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and Google Cloud billing are ready.
 
@@ -70,7 +70,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Predeploy secret/API exposure scan: pass.
 - Canonical verifier: pass with `PYTHONUTF8=1` on Windows.
 - GitHub Actions on draft PR #2: API lint/tests pass; web production build pass.
-- GitHub Actions on stacked draft PR #3: API lint/tests pass; web production build pass.
+- GitHub Actions on merged PR #3: API lint/tests pass; web production build pass.
 - PDF parser tests: valid, MIME, extension, signature, malformed, oversized, encrypted, image-only, short, overlong, and page-limit cases pass.
 - Actual PDF comparison: 1,054/985/997 extracted characters and three distinct ordered teams.
 - Prior PDF adapter browser workflow: desktop and mobile upload/evaluate/error-recovery passed before the control was intentionally replaced by the synthetic meeting library.
@@ -87,10 +87,9 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 
 # Next task
 
-1. Obtain external review for draft PR #3, address actionable feedback, and merge.
-2. Obtain external review for stacked draft PR #4, address actionable feedback, and merge after PR #3.
-3. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run and review persistence.
-4. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
+1. Merge draft PR #4 after its completed external review and passing verification.
+2. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run and review persistence.
+3. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
 
 # Risks or blockers
 

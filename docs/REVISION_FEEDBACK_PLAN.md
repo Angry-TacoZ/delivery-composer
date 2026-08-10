@@ -29,13 +29,13 @@ Replace the current terminal `Request revision` state with a real, traceable fee
 
 ## Acceptance criteria
 
-- [ ] Empty or short revision feedback is rejected clearly in the client and API.
-- [ ] A revision decision no longer leaves disabled controls as the only visible actions.
-- [ ] `Change decision` permits a corrected approval or revision and overwrites the run's current review safely.
-- [ ] `Re-evaluate with feedback` creates a new run linked to the reviewed parent run.
-- [ ] Explicit deterministic role-replacement feedback materially changes the resulting composition.
-- [ ] The prior result remains available through an interactive result-delta disclosure.
-- [ ] Approval exposes a working new-evaluation path.
-- [ ] Duplicate submissions remain guarded while a request is in flight.
-- [ ] API tests, frontend build, browser workflow, secret scan, canonical verifier, and CI pass.
-
+- [x] Empty or short revision feedback is rejected clearly in the client and API.
+- [x] A revision decision no longer leaves disabled controls as the only visible actions.
+- [x] `Change decision` permits a corrected approval or revision and overwrites the run's current review safely.
+- [x] `Re-evaluate with feedback` creates a new run linked to the reviewed parent run.
+- [x] Explicit deterministic role-replacement feedback materially changes the resulting composition.
+- [x] The prior result remains available through an interactive result-delta disclosure.
+- [x] Approval exposes a working new-evaluation path.
+- [x] Duplicate submissions remain guarded while a request is in flight.
+- [x] API tests, frontend build, browser workflow, secret scan, and canonical verifier pass.
+- [ ] PR CI passes on the final pushed commit.

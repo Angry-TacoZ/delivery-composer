@@ -47,8 +47,15 @@ CREATE TABLE IF NOT EXISTS composition_runs (
     brief_id UUID NOT NULL REFERENCES engagement_briefs(id),
     result JSONB NOT NULL,
     retrieval_mode TEXT NOT NULL CHECK (retrieval_mode IN ('postgres_pgvector', 'deterministic_demo')),
+    parent_run_id UUID REFERENCES composition_runs(id),
+    revision_feedback TEXT CHECK (revision_feedback IS NULL OR char_length(revision_feedback) BETWEEN 10 AND 600),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE composition_runs
+    ADD COLUMN IF NOT EXISTS parent_run_id UUID REFERENCES composition_runs(id);
+ALTER TABLE composition_runs
+    ADD COLUMN IF NOT EXISTS revision_feedback TEXT;
 
 CREATE TABLE IF NOT EXISTS review_decisions (
     id UUID PRIMARY KEY,

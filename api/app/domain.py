@@ -11,11 +11,30 @@ ReviewPersistence = Literal["session", "postgres"]
 
 class BriefInput(BaseModel):
     raw_brief: str = Field(min_length=40, max_length=1600)
+    parent_run_id: UUID | None = None
+    revision_feedback: str | None = Field(default=None, max_length=600)
 
     @field_validator("raw_brief")
     @classmethod
     def normalize_brief(cls, value: str) -> str:
         return " ".join(value.split())
+
+    @field_validator("revision_feedback")
+    @classmethod
+    def normalize_revision_feedback(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return " ".join(value.split())
+
+    @model_validator(mode="after")
+    def revision_context_must_be_complete(self) -> "BriefInput":
+        has_parent = self.parent_run_id is not None
+        has_feedback = self.revision_feedback is not None
+        if has_parent != has_feedback:
+            raise ValueError("Revision feedback and parent run must be supplied together.")
+        if self.revision_feedback is not None and len(self.revision_feedback) < 10:
+            raise ValueError("Revision feedback must contain at least 10 characters.")
+        return self
 
 
 class BriefRequirements(BaseModel):
@@ -76,6 +95,8 @@ class ComposeResponse(BaseModel):
     assignments: list[TeamAssignment]
     summary: str
     retrieval_mode: Literal["postgres_pgvector", "deterministic_demo"]
+    parent_run_id: UUID | None = None
+    revision_feedback: str | None = Field(default=None, max_length=600)
     generated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
@@ -95,6 +116,13 @@ class ReviewInput(BaseModel):
     status: ReviewStatus
     notes: str = Field(default="", max_length=600)
     overrides: list[TeamOverride] = Field(default_factory=list, max_length=4)
+
+    @model_validator(mode="after")
+    def revision_requires_actionable_notes(self) -> "ReviewInput":
+        self.notes = " ".join(self.notes.split())
+        if self.status == "needs_changes" and len(self.notes) < 10:
+            raise ValueError("Revision feedback must contain at least 10 characters.")
+        return self
 
 
 class ReviewResponse(BaseModel):

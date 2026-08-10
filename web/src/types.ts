@@ -54,6 +54,8 @@ export interface ComposeResponse {
   assignments: TeamAssignment[];
   summary: string;
   retrieval_mode: "postgres_pgvector" | "deterministic_demo";
+  parent_run_id: string | null;
+  revision_feedback: string | null;
   generated_at: string;
 }
 

@@ -50,12 +50,19 @@ Deterministic meeting scores are fully attributable: `58` points for exact role 
 
 The service recommends only a candidate who passes the hard gates. A delivery leader can still select another candidate, including one with a clearly labeled exception, to demonstrate the real governance boundary. That override is validated against the composition run and carried into the final review record; recomposing or changing the brief clears it.
 
+## Actionable review and revision
+
+Approval and revision are real API decisions rather than decorative buttons. Approval exposes working actions to change the decision or begin another evaluation. A revision request requires actionable feedback, records that review, and exposes `Re-evaluate with feedback`. The new composition is linked to its reviewed parent run, applies the bounded feedback, and keeps an interactive prior-versus-current role and team delta in the interface.
+
+In deterministic meeting mode, explicit instructions such as `Replace the Data & AI Engineer with a Cloud Engineer` materially change the requested role set without making a paid model call. The live adapter supplies the same bounded revision context to Gemini and pgvector while keeping credentials server-side.
+
 ## What the demo proves
 
 - A realistic client brief can be converted into a three-person delivery recommendation.
 - Every proposed consultant is accompanied by the evidence and hard-constraint checks used to support the match.
 - Every requested role exposes three distinct candidates with visible positives and trade-offs.
 - A human can override the recommendation without hiding a failed constraint, and that decision is captured in the review.
+- A revision request produces a linked re-evaluation and an inspectable prior-result delta instead of a terminal disabled state.
 - AI-generated reasoning is advisory and cannot bypass clearance or availability rules.
 - The same interface supports a deterministic, no-cost preview and the configured PostgreSQL/pgvector + Gemini path.
 - The public-facing concept uses synthetic people and engagement data only.

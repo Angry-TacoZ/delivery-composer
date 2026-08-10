@@ -8,6 +8,7 @@ from psycopg_pool import ConnectionPool
 
 from .demo_data import CONSULTANTS
 from .domain import (
+    BriefInput,
     BriefRequirements,
     CandidateOption,
     ComposeResponse,
@@ -192,6 +193,13 @@ class DemoRepository:
         _validate_review_overrides(self.runs[run_id], review)
         self.reviews[run_id] = review
 
+    def validate_revision(self, parent_run_id: UUID) -> None:
+        if parent_run_id not in self.runs:
+            raise ValueError("The parent composition run was not found.")
+        review = self.reviews.get(parent_run_id)
+        if review is None or review.status != "needs_changes":
+            raise ValueError("The parent run must have a recorded revision request.")
+
 
 class PostgresRepository:
     """Small pool sized for Aiven's free-tier 20-connection limit."""
@@ -253,7 +261,7 @@ class PostgresRepository:
         ]
         return self._assign_roles(candidates, requirements, rows)
 
-    def record_run(self, raw_brief: str, response: ComposeResponse) -> None:
+    def record_run(self, brief_input: BriefInput, response: ComposeResponse) -> None:
         brief_id = uuid4()
         with self.pool.connection() as connection, connection.cursor() as cursor:
             cursor.execute(
@@ -261,21 +269,46 @@ class PostgresRepository:
                 INSERT INTO engagement_briefs (id, raw_brief, extracted_requirements)
                 VALUES (%s, %s, %s)
                 """,
-                (brief_id, raw_brief, Jsonb(response.requirements.model_dump(mode="json"))),
+                (
+                    brief_id,
+                    brief_input.raw_brief,
+                    Jsonb(response.requirements.model_dump(mode="json")),
+                ),
             )
             cursor.execute(
                 """
-                INSERT INTO composition_runs (id, brief_id, result, retrieval_mode)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO composition_runs (
+                    id, brief_id, result, retrieval_mode, parent_run_id, revision_feedback
+                )
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """,
                 (
                     response.run_id,
                     brief_id,
                     Jsonb(response.model_dump(mode="json")),
                     response.retrieval_mode,
+                    brief_input.parent_run_id,
+                    brief_input.revision_feedback,
                 ),
             )
             connection.commit()
+
+    def validate_revision(self, parent_run_id: UUID) -> None:
+        with self.pool.connection() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT r.status
+                FROM composition_runs c
+                LEFT JOIN review_decisions r ON r.run_id = c.id
+                WHERE c.id = %s
+                """,
+                (parent_run_id,),
+            )
+            row = cursor.fetchone()
+        if row is None:
+            raise ValueError("The parent composition run was not found.")
+        if row[0] != "needs_changes":
+            raise ValueError("The parent run must have a recorded revision request.")
 
     def record_review(self, run_id: UUID, review: ReviewInput) -> None:
         with self.pool.connection() as connection, connection.cursor() as cursor:

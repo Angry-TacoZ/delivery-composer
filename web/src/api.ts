@@ -8,11 +8,18 @@ export async function fetchDemoBriefs(): Promise<DemoBrief[]> {
   return (await response.json()) as DemoBrief[];
 }
 
-export async function composeTeam(rawBrief: string): Promise<ComposeResponse> {
+export async function composeTeam(
+  rawBrief: string,
+  revision?: { parentRunId: string; feedback: string },
+): Promise<ComposeResponse> {
   const response = await fetch(`${API_BASE}/compose`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ raw_brief: rawBrief }),
+    body: JSON.stringify({
+      raw_brief: rawBrief,
+      parent_run_id: revision?.parentRunId,
+      revision_feedback: revision?.feedback,
+    }),
   });
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { detail?: string };

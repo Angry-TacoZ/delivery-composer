@@ -1,5 +1,5 @@
 from .config import Settings
-from .domain import BriefInput, ComposeResponse, ReviewInput
+from .domain import BriefInput, ComposeResponse, ReviewInput, ReviewPersistence
 from .providers import AnalysisProvider
 from .repository import DemoRepository, PostgresRepository
 
@@ -21,7 +21,7 @@ class ComposerService:
 
     def compose(self, brief_input: BriefInput) -> ComposeResponse:
         requirements = self.provider.extract_requirements(brief_input.raw_brief)
-        if self.postgres_repository is not None and self.settings.has_gemini:
+        if self.uses_live_path:
             assignments = self.postgres_repository.rank(
                 requirements, self.provider.embed_query(brief_input.raw_brief)
             )
@@ -43,10 +43,19 @@ class ComposerService:
             summary=summary,
             retrieval_mode=retrieval_mode,
         )
-        if self.postgres_repository is not None and retrieval_mode == "postgres_pgvector":
+        if self.uses_live_path:
             self.postgres_repository.record_run(brief_input.raw_brief, response)
+        else:
+            self.demo_repository.record_run(response)
         return response
 
-    def record_review(self, run_id, review: ReviewInput) -> None:
-        if self.postgres_repository is not None and self.settings.has_gemini:
+    @property
+    def uses_live_path(self) -> bool:
+        return self.postgres_repository is not None and self.settings.has_gemini
+
+    def record_review(self, run_id, review: ReviewInput) -> ReviewPersistence:
+        if self.uses_live_path:
             self.postgres_repository.record_review(run_id, review)
+            return "postgres"
+        self.demo_repository.record_review(run_id, review)
+        return "session"

@@ -40,18 +40,18 @@ Source: <https://www.c86.tech/methodology>
 
 ## Acceptance criteria
 
-- [ ] The interface names and orders all five stages: Identify, Define, Execute, Assure, Learn.
-- [ ] Stage descriptions accurately reflect C86's published methodology and the actual product behavior.
-- [ ] Stage state changes are visible across initial, composing, recommendation-ready, and reviewed states.
-- [ ] Optional review notes are server-validated and limited to 600 characters.
-- [ ] Demo review submissions are stored for the API process lifetime and labeled `session` persistence.
-- [ ] Configured PostgreSQL review submissions remain labeled `postgres` persistence.
-- [ ] The UI never says a decision was recorded without identifying the persistence boundary.
-- [ ] Existing compose, evidence expansion, approve, and revision workflows still work.
-- [ ] Desktop and mobile layouts retain the approved C86 visual system without overflow or inaccessible controls.
-- [ ] Tests cover demo review storage and response provenance.
-- [ ] README and handoff explain IDEAL alignment without claiming C86 endorsement.
-- [ ] Canonical verification, secret scan, browser checks, and GitHub Actions pass.
+- [x] The interface names and orders all five stages: Identify, Define, Execute, Assure, Learn.
+- [x] Stage descriptions accurately reflect C86's published methodology and the actual product behavior.
+- [x] Stage state changes are visible across initial, composing, recommendation-ready, and reviewed states.
+- [x] Optional review notes are server-validated and limited to 600 characters.
+- [x] Demo review submissions are stored for the API process lifetime and labeled `session` persistence.
+- [x] Configured PostgreSQL review submissions remain labeled `postgres` persistence.
+- [x] The UI never says a decision was recorded without identifying the persistence boundary.
+- [x] Existing compose, evidence expansion, approve, and revision workflows still work.
+- [x] Desktop and mobile layouts retain the approved C86 visual system without overflow or inaccessible controls.
+- [x] Tests cover demo review storage and response provenance.
+- [x] README and handoff explain IDEAL alignment without claiming C86 endorsement.
+- [x] Canonical verification, secret scan, browser checks, and GitHub Actions pass.
 
 ## Out of scope
 

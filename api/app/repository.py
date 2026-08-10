@@ -43,6 +43,10 @@ def _constraint_checks(consultant: Consultant, requirements: BriefRequirements) 
 
 
 class DemoRepository:
+    def __init__(self) -> None:
+        self.runs: dict[UUID, ComposeResponse] = {}
+        self.reviews: dict[UUID, ReviewInput] = {}
+
     def rank(self, requirements: BriefRequirements) -> list[TeamAssignment]:
         assignments: list[TeamAssignment] = []
         used_ids: set[UUID] = set()
@@ -77,6 +81,14 @@ class DemoRepository:
                 )
             )
         return assignments
+
+    def record_run(self, response: ComposeResponse) -> None:
+        self.runs[response.run_id] = response
+
+    def record_review(self, run_id: UUID, review: ReviewInput) -> None:
+        if run_id not in self.runs:
+            raise KeyError(run_id)
+        self.reviews[run_id] = review
 
 
 class PostgresRepository:

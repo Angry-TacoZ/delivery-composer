@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 
 Clearance = Literal["baseline", "sc", "dv"]
 ReviewStatus = Literal["approved", "needs_changes"]
+ReviewPersistence = Literal["session", "postgres"]
 
 
 class BriefInput(BaseModel):
@@ -73,4 +74,5 @@ class ReviewInput(BaseModel):
 class ReviewResponse(BaseModel):
     run_id: UUID
     status: ReviewStatus
+    persistence_mode: ReviewPersistence
     recorded_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

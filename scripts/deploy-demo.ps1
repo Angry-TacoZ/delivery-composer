@@ -79,6 +79,26 @@ try {
     & $gcloudCommand services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com iam.googleapis.com --quiet
     Assert-LastExitCode "Google Cloud API enablement"
 
+    $projectNumber = (& $gcloudCommand projects describe $ProjectId --format "value(projectNumber)").Trim()
+    Assert-LastExitCode "Google Cloud project number lookup"
+    if (-not $projectNumber) {
+        throw "Google Cloud did not return a project number for '$ProjectId'."
+    }
+    $buildServiceAccount = "$projectNumber-compute@developer.gserviceaccount.com"
+    $builderRole = & $gcloudCommand projects get-iam-policy $ProjectId `
+        --flatten "bindings[].members" `
+        --filter "bindings.role=roles/run.builder AND bindings.members=serviceAccount:$buildServiceAccount" `
+        --format "value(bindings.role)"
+    Assert-LastExitCode "Cloud Run builder role lookup"
+    if (-not $builderRole) {
+        & $gcloudCommand projects add-iam-policy-binding $ProjectId `
+            --member "serviceAccount:$buildServiceAccount" `
+            --role "roles/run.builder" `
+            --condition None `
+            --quiet
+        Assert-LastExitCode "Cloud Run builder role assignment"
+    }
+
     $existingRuntimeAccount = & $gcloudCommand iam service-accounts list `
         --project $ProjectId `
         --filter "email=$runtimeServiceAccount" `

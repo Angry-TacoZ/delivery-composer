@@ -73,8 +73,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def health() -> dict[str, str | bool]:
         return {
             "status": "ok",
+            "execution_mode": active_settings.execution_mode,
             "database_configured": bool(active_settings.database_url),
             "gemini_configured": active_settings.has_gemini,
+            "live_path_configured": active_settings.live_path_configured,
             "demo_mode": active_settings.demo_mode,
         }
 

@@ -17,7 +17,7 @@ class AnalysisProvider:
         self.settings = settings
         self.client = (
             genai.Client(api_key=settings.gemini_api_key.get_secret_value())
-            if settings.has_gemini
+            if settings.live_path_enabled
             else None
         )
 

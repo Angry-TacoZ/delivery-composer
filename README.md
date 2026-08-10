@@ -52,6 +52,14 @@ These cases produce different titles, skills, sectors, target dates, roles, summ
 
 ## Architecture
 
+Today's meeting build deliberately runs the no-cost deterministic path:
+
+```text
+React -> FastAPI -> deterministic requirements and ranking -> API-session review storage
+```
+
+The same FastAPI service owns the planned live adapters:
+
 ```text
 React + Firebase Hosting
           |
@@ -64,6 +72,8 @@ Aiven PostgreSQL + pgvector
 
 PDF upload -> FastAPI validation + pypdf extraction -> editable brief text
 ```
+
+`DEMO_MODE=true` is an enforced execution boundary: PostgreSQL and Gemini adapters are not initialized even if credentials happen to exist. The live path is enabled only by setting `DEMO_MODE=false` with both server-side credentials; incomplete live configuration fails at startup instead of silently producing a hybrid result. See [`docs/TODAYS_DEMO.md`](docs/TODAYS_DEMO.md) for the meeting walkthrough and upgrade boundary.
 
 The browser never receives the Aiven connection URI or Gemini API key. FastAPI validates the brief, bounds request size, and owns all database and model-provider access.
 
@@ -111,7 +121,7 @@ Open `http://127.0.0.1:5173` and run the populated sample brief.
 
 Copy `.env.example` to `.env` and add the real values locally. Never commit `.env`, a database URI, or a model API key.
 
-After `DATABASE_URL` and `GEMINI_API_KEY` are available server-side:
+After `DATABASE_URL` and `GEMINI_API_KEY` are available server-side, set `DEMO_MODE=false` and run:
 
 ```powershell
 Push-Location api

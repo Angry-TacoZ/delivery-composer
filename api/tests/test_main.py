@@ -1,6 +1,7 @@
 from io import BytesIO
 from uuid import UUID
 
+import pytest
 from app.config import Settings
 from app.demo_data import DEMO_BRIEF
 from app.domain import BriefInput, ReviewInput
@@ -44,10 +45,49 @@ def test_health_does_not_expose_configuration() -> None:
     assert response.status_code == 200
     assert response.json() == {
         "status": "ok",
+        "execution_mode": "deterministic_demo",
         "database_configured": False,
         "gemini_configured": False,
+        "live_path_configured": False,
         "demo_mode": True,
     }
+
+
+def test_demo_mode_does_not_initialize_configured_live_adapters() -> None:
+    service = ComposerService(
+        Settings(
+            demo_mode=True,
+            database_url="postgresql://configured-but-unused.example/test",
+            gemini_api_key=SecretStr("configured-but-unused"),
+        )
+    )
+
+    composition = service.compose(BriefInput(raw_brief=DEMO_BRIEF))
+
+    assert service.postgres_repository is None
+    assert service.provider.client is None
+    assert service.uses_live_path is False
+    assert composition.retrieval_mode == "deterministic_demo"
+    assert composition.requirements.extraction_source == "deterministic_demo"
+
+
+@pytest.mark.parametrize(
+    ("database_url", "gemini_api_key"),
+    [
+        (None, None),
+        ("postgresql://configured.example/test", None),
+        (None, SecretStr("configured")),
+    ],
+)
+def test_live_mode_requires_both_backend_services(database_url, gemini_api_key) -> None:
+    with pytest.raises(RuntimeError, match="requires both DATABASE_URL and GEMINI_API_KEY"):
+        ComposerService(
+            Settings(
+                demo_mode=False,
+                database_url=database_url,
+                gemini_api_key=gemini_api_key,
+            )
+        )
 
 
 def test_extract_pdf_populates_bounded_brief_text() -> None:
@@ -172,6 +212,7 @@ def test_demo_review_is_stored_for_the_api_session() -> None:
 def test_live_review_returns_postgres_provenance() -> None:
     service = ComposerService(
         Settings(
+            demo_mode=False,
             database_url="postgresql://unused.example/test",
             gemini_api_key=SecretStr("configured-for-test"),
         )

@@ -6,7 +6,7 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 was merged after external review. Draft PR #2 aligns the workflow with C86's IDEAL methodology. Stacked draft PR #3 targets the PR #2 branch and adds bounded PDF ingestion plus three distinct synthetic demonstration briefs.
 
-The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. The live PostgreSQL/pgvector + Gemini path remains unconfigured until server-side secrets and Google Cloud billing are ready.
+The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. Today's build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and Google Cloud billing are ready.
 
 # Decisions
 
@@ -22,6 +22,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Review submissions use an immediate in-flight guard, disable both decisions and notes while saving, and expose an accessible saving status to prevent rapid duplicate requests.
 - PDF extraction is server-side, non-persistent, limited to one searchable PDF of at most 2 MiB/five pages/1,600 extracted characters, and feeds the same editable evaluator field as manual text.
 - The deterministic preview now derives sector-specific roles, target dates, summaries, and ordered teams for critical-infrastructure, financial-services, and media/broadcast scenarios.
+- `DEMO_MODE=true` now enforces adapter isolation even when credentials exist; `DEMO_MODE=false` fails fast unless both PostgreSQL and Gemini are configured.
 
 # Changed files
 
@@ -39,6 +40,8 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - `api/app/providers.py` and `api/app/repository.py`: input-dependent roles, sectors, dates, summaries, and availability checks.
 - `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: native PDF source control, extraction provenance, editable text, loading/error states, and responsive layout.
 - `docs/PDF_BRIEF_INGESTION.md`, `docs/pdf-qa.md`, and `docs/screenshots/delivery-composer-pdf-evaluation.png`: plan and visual/functional evidence for PR #3.
+- `docs/TODAYS_DEMO.md`: explicit meeting scope, architecture boundary, visual/content/interaction thesis, and 15-minute walkthrough.
+- `api/app/config.py`, `api/app/providers.py`, and `api/app/service.py`: explicit deterministic/live execution switch with fail-fast live configuration.
 - `docs/design-qa.md` and `docs/screenshots/`: same-size visual comparison record plus desktop/mobile evidence.
 
 # Verification
@@ -50,7 +53,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Responsive check: 390 × 844 viewport passed with no unintended horizontal overflow.
 - Browser console: no warnings or errors during desktop or mobile primary workflow.
 - Ruff: pass.
-- Pytest: 11 passed; two dependency deprecation warnings on local Python 3.14.
+- Pytest: 15 passed; two dependency deprecation warnings on local Python 3.14.
 - Frontend TypeScript/Vite production build: pass.
 - npm production dependency audit: 0 vulnerabilities.
 - Predeploy secret/API exposure scan: pass.
@@ -61,12 +64,14 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Actual PDF comparison: 1,054/985/997 extracted characters and three distinct ordered teams.
 - PDF browser workflow: desktop and mobile upload/evaluate/error-recovery pass with no console warnings or errors.
 - Review hardening browser check: a rapid double-click completed one approval state and left both decision controls and notes disabled.
+- Deterministic-mode browser replay: compose, evidence, IDEAL completion, review notes, and session-provenance confirmation passed after adapter isolation changes.
+- Execution-boundary tests: demo mode ignores configured live credentials; live mode rejects missing PostgreSQL or Gemini configuration.
 
 # Next task
 
 1. Obtain external review for draft PR #2, address actionable feedback, and merge.
 2. Retarget stacked draft PR #3 to `main` after PR #2 merges, then obtain external review for the PDF feature.
-3. Replace the deterministic local evaluation path with the configured Aiven PostgreSQL/pgvector and Gemini path, then prove run and review persistence.
+3. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run and review persistence.
 4. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
 
 # Risks or blockers

@@ -7,9 +7,16 @@ from .repository import DemoRepository, PostgresRepository
 class ComposerService:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
+        if not settings.demo_mode and not settings.live_path_configured:
+            raise RuntimeError(
+                "Live mode requires both DATABASE_URL and GEMINI_API_KEY. "
+                "Set DEMO_MODE=true for the deterministic preview."
+            )
         self.provider = AnalysisProvider(settings)
         self.demo_repository = DemoRepository()
-        self.postgres_repository = PostgresRepository(settings.database_url) if settings.database_url else None
+        self.postgres_repository = (
+            PostgresRepository(settings.database_url) if settings.live_path_enabled else None
+        )
 
     def startup(self) -> None:
         if self.postgres_repository is not None:
@@ -51,7 +58,7 @@ class ComposerService:
 
     @property
     def uses_live_path(self) -> bool:
-        return self.postgres_repository is not None and self.settings.has_gemini
+        return self.settings.live_path_enabled and self.postgres_repository is not None
 
     def record_review(self, run_id, review: ReviewInput) -> ReviewPersistence:
         if self.uses_live_path:

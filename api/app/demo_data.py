@@ -3,7 +3,7 @@ from uuid import UUID
 
 from .domain import Consultant
 
-DEMO_BRIEF = """Build a three-person delivery team for a critical-infrastructure resilience programme.
+DEMO_BRIEF = """Build a three-person delivery team for a critical-infrastructure resilience program.
 The client needs a security-first discovery and implementation plan covering zero trust,
 cloud transformation, data governance, and an AI-assisted security operations use case.
 The engagement starts in four weeks and requires SC-cleared consultants with public-sector
@@ -21,7 +21,7 @@ CONSULTANTS: list[Consultant] = [
         clearance="sc",
         skills=["zero trust", "cloud transformation", "security architecture", "identity"],
         sectors=["critical infrastructure", "public sector"],
-        profile_text="Principal security architect who has led zero-trust and identity modernisation for regulated national infrastructure programmes.",
+        profile_text="Principal security architect who has led zero-trust and identity modernization for regulated national infrastructure programs.",
         evidence=[
             "Led a zero-trust architecture assessment for a regulated infrastructure operator.",
             "SC cleared and available before the requested start date.",
@@ -41,9 +41,9 @@ CONSULTANTS: list[Consultant] = [
         clearance="sc",
         skills=["delivery leadership", "cloud transformation", "stakeholder management", "governance"],
         sectors=["public sector", "transport"],
-        profile_text="Delivery director experienced in recovery, discovery, and multi-vendor governance for public-sector and transport programmes.",
+        profile_text="Delivery director experienced in recovery, discovery, and multi-vendor governance for public-sector and transport programs.",
         evidence=[
-            "Recovered a cross-supplier cloud programme and established a delivery cadence.",
+            "Recovered a cross-supplier cloud program and established a delivery cadence.",
             "Has run discovery through implementation with senior public-sector stakeholders.",
         ],
         considerations=[
@@ -81,14 +81,14 @@ CONSULTANTS: list[Consultant] = [
         clearance="baseline",
         skills=["cloud transformation", "platform engineering", "terraform", "aws"],
         sectors=["media"],
-        profile_text="Senior cloud engineer specialising in platform automation and Terraform foundations.",
+        profile_text="Senior cloud engineer specializing in platform automation and Terraform foundations.",
         evidence=[
             "Automated a broadcast platform foundation with Terraform and AWS controls.",
             "Recovered a delayed platform backlog before a live-event release window.",
         ],
         considerations=[
             "Holds baseline rather than SC clearance.",
-            "Available later than candidates focused on regulated cloud programmes.",
+            "Available later than candidates focused on regulated cloud programs.",
         ],
     ),
     Consultant(
@@ -100,7 +100,7 @@ CONSULTANTS: list[Consultant] = [
         availability_date=date(2026, 8, 18),
         clearance="dv",
         skills=["zero trust", "security operations", "threat detection", "incident response"],
-        sectors=["government", "defence"],
+        sectors=["government", "defense"],
         profile_text="Senior security consultant focused on threat detection and SOC transformation in high-assurance environments.",
         evidence=[
             "Exceeds the clearance threshold and brings SOC operating-model depth.",
@@ -121,7 +121,7 @@ CONSULTANTS: list[Consultant] = [
         clearance="baseline",
         skills=["delivery leadership", "data governance", "ai engineering", "governance"],
         sectors=["financial services"],
-        profile_text="Principal delivery lead for governed AI and data programmes in financial services, experienced with risk, compliance, and technology stakeholders.",
+        profile_text="Principal delivery lead for governed AI and data programs in financial services, experienced with risk, compliance, and technology stakeholders.",
         evidence=[
             "Moved a regulated AI claims pilot into controlled production governance.",
             "Built joint delivery controls across risk, compliance, and engineering teams.",
@@ -141,9 +141,9 @@ CONSULTANTS: list[Consultant] = [
         clearance="baseline",
         skills=["delivery leadership", "cloud transformation", "incident response", "stakeholder management"],
         sectors=["media"],
-        profile_text="Delivery director specialising in broadcast platform recovery, supplier mobilisation, and live-event readiness.",
+        profile_text="Delivery director specializing in broadcast platform recovery, supplier mobilization, and live-event readiness.",
         evidence=[
-            "Recovered a delayed broadcast platform programme ahead of a major live event.",
+            "Recovered a delayed broadcast platform program ahead of a major live event.",
             "Established executive reporting and supplier accountability during service recovery.",
         ],
         considerations=[
@@ -160,11 +160,11 @@ CONSULTANTS: list[Consultant] = [
         availability_date=date(2026, 9, 12),
         clearance="dv",
         skills=["zero trust", "security architecture", "identity", "threat detection"],
-        sectors=["defence", "transport"],
+        sectors=["defense", "transport"],
         profile_text="DV-cleared security architect focused on identity, zero trust, and high-assurance threat architecture.",
         evidence=[
-            "Designed a cross-domain zero-trust architecture for a high-assurance programme.",
-            "Brings deeper clearance and threat-modelling experience than the other architect options.",
+            "Designed a cross-domain zero-trust architecture for a high-assurance program.",
+            "Brings deeper clearance and threat-modeling experience than the other architect options.",
         ],
         considerations=[
             "Unavailable for the earliest critical-infrastructure scenario start.",
@@ -203,7 +203,7 @@ CONSULTANTS: list[Consultant] = [
         sectors=["financial services", "media"],
         profile_text="Senior AI engineer experienced in governed model delivery and cloud data products for financial-services and media teams.",
         evidence=[
-            "Productionised a governed claims-assistance workflow with measurable review controls.",
+            "Productionized a governed claims-assistance workflow with measurable review controls.",
             "Built Python and cloud data services with traceable model inputs and outputs.",
         ],
         considerations=[
@@ -220,10 +220,10 @@ CONSULTANTS: list[Consultant] = [
         availability_date=date(2026, 9, 28),
         clearance="dv",
         skills=["data governance", "ai engineering", "security operations", "postgresql"],
-        sectors=["public sector", "defence"],
-        profile_text="DV-cleared principal data engineer specialising in governed AI, PostgreSQL, and high-assurance auditability.",
+        sectors=["public sector", "defense"],
+        profile_text="DV-cleared principal data engineer specializing in governed AI, PostgreSQL, and high-assurance auditability.",
         evidence=[
-            "Designed a governed data and AI control plane for a high-assurance public programme.",
+            "Designed a governed data and AI control plane for a high-assurance public program.",
             "Brings the strongest PostgreSQL and auditability depth in the synthetic roster.",
         ],
         considerations=[
@@ -263,7 +263,7 @@ CONSULTANTS: list[Consultant] = [
         sectors=["financial services", "transport"],
         profile_text="Senior platform engineer experienced in Terraform delivery, service recovery, and regulated cloud operations.",
         evidence=[
-            "Stabilised a regulated cloud platform through infrastructure-as-code and recovery automation.",
+            "Stabilized a regulated cloud platform through infrastructure-as-code and recovery automation.",
             "Brings stronger incident-response depth than the other cloud options.",
         ],
         considerations=[
@@ -281,7 +281,7 @@ CONSULTANTS: list[Consultant] = [
         clearance="baseline",
         skills=["security operations", "threat detection", "incident response", "cloud transformation"],
         sectors=["media", "financial services"],
-        profile_text="Security consultant specialising in incident response and threat detection for media and financial-services operations.",
+        profile_text="Security consultant specializing in incident response and threat detection for media and financial-services operations.",
         evidence=[
             "Led incident-response readiness for a live broadcast environment.",
             "Connected threat detection to operational controls in a regulated financial-services team.",
@@ -307,7 +307,7 @@ CONSULTANTS: list[Consultant] = [
             "Brings strong critical-infrastructure incident-readiness evidence.",
         ],
         considerations=[
-            "Late-September availability misses early programme starts.",
+            "Late-September availability misses early program starts.",
             "Limited direct media and financial-services experience.",
         ],
     ),

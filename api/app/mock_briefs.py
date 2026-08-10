@@ -6,8 +6,8 @@ MOCK_BRIEFS = [
         "sector": "Critical infrastructure and public sector",
         "brief": (
             "A national critical infrastructure operator needs a three-person delivery team "
-            "to recover its cyber resilience programme. The team must define a zero trust "
-            "architecture, modernise the cloud control plane, establish data governance, and "
+            "to recover its cyber resilience program. The team must define a zero trust "
+            "architecture, modernize the cloud control plane, establish data governance, and "
             "introduce AI-assisted security operations with evidence-led threat detection. "
             "Required roles are delivery leadership, security architecture, and data and AI "
             "engineering. All consultants must hold SC clearance and be available by "
@@ -37,7 +37,7 @@ MOCK_BRIEFS = [
         "sector": "Media and broadcast",
         "brief": (
             "A media and broadcast provider needs a three-person team to recover a delayed "
-            "cloud platform programme before a major live-event season. The work covers cloud "
+            "cloud platform program before a major live-event season. The work covers cloud "
             "transformation, platform engineering, Terraform infrastructure as code, service "
             "recovery, incident response, and security operations. Required roles are delivery "
             "leadership, cloud engineering, and security consulting. Baseline clearance is "

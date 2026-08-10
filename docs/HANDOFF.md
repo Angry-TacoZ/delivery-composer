@@ -55,6 +55,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Predeploy secret/API exposure scan: pass.
 - Canonical verifier: pass with `PYTHONUTF8=1` on Windows.
 - GitHub Actions on draft PR #2: API lint/tests pass; web production build pass.
+- GitHub Actions on stacked draft PR #3: API lint/tests pass; web production build pass.
 - PDF parser tests: valid, MIME, extension, signature, malformed, oversized, encrypted, image-only, short, overlong, and page-limit cases pass.
 - Actual PDF comparison: 1,054/985/997 extracted characters and three distinct ordered teams.
 - PDF browser workflow: desktop and mobile upload/evaluate/error-recovery pass with no console warnings or errors.

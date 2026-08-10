@@ -62,7 +62,7 @@ The deterministic preview must derive distinct titles, skills, sectors, roles, s
 - [x] Tests cover a valid PDF and malformed, wrong-type, oversized, encrypted, image-only, too-many-page, and overlong cases.
 - [x] Existing manual composition, IDEAL stages, evidence expansion, and review persistence continue to work.
 - [x] README and handoff describe the PDF boundary, sample artifacts, and stacked-PR dependency.
-- [ ] Canonical verification, dependency audit, predeploy secret scan, browser checks, and GitHub Actions pass.
+- [x] Canonical verification, dependency audit, predeploy secret scan, browser checks, and GitHub Actions pass.
 
 ## Out of scope
 

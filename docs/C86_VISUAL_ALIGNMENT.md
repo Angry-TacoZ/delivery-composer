@@ -30,16 +30,16 @@ The MVP may be tailored for a conversation with C86, but it must not imply that 
 
 ## Acceptance criteria
 
-- [ ] A side-by-side design QA compares the supplied C86 reference with the same-size application capture.
-- [ ] No actionable P0, P1, or P2 design-QA findings remain.
-- [ ] No neon/lime accent remains in the application.
-- [ ] The linework/spectral visual is a checked-in raster asset with no embedded source-site text or logo.
-- [ ] Compose, evidence expansion, and approve/revise interactions still work.
-- [ ] Desktop and mobile layouts have no clipped primary controls or unintended horizontal overflow.
-- [ ] Browser console shows no application errors during the primary workflow.
-- [ ] Ruff, API tests, frontend production build, canonical verification, and the predeploy secret scan pass.
-- [ ] README accurately separates implemented behavior, deterministic preview behavior, and deployment work still requiring secrets/billing.
-- [ ] No database credential, Gemini key, paid API call, or real client/candidate data is introduced.
+- [x] A side-by-side design QA compares the supplied C86 reference with the same-size application capture.
+- [x] No actionable P0, P1, or P2 design-QA findings remain.
+- [x] No neon/lime accent remains in the application.
+- [x] The linework/spectral visual is a checked-in raster asset with no embedded source-site text or logo.
+- [x] Compose, evidence expansion, and approve/revise interactions still work.
+- [x] Desktop and mobile layouts have no clipped primary controls or unintended horizontal overflow.
+- [x] Browser console shows no application errors during the primary workflow.
+- [x] Ruff, API tests, frontend production build, canonical verification, and the predeploy secret scan pass.
+- [x] README accurately separates implemented behavior, deterministic preview behavior, and deployment work still requiring secrets/billing.
+- [x] No database credential, Gemini key, paid API call, or real client/candidate data is introduced.
 
 ## Out of scope
 

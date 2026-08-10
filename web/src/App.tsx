@@ -26,10 +26,11 @@ function AssignmentRow({ assignment, index }: { assignment: TeamAssignment; inde
           <span>{assignment.consultant.name} · {assignment.consultant.seniority}</span>
         </span>
         <span className="score-block" aria-label={`${percent(assignment.semantic_score)} semantic alignment`}>
-          <span>{percent(assignment.semantic_score)}</span>
+          <span>{percent(assignment.semantic_score)} alignment</span>
           <i style={{ "--score": assignment.semantic_score } as React.CSSProperties} />
         </span>
         <span className={allChecksPass ? "verified" : "exception"}>{allChecksPass ? "Verified" : "Review"}</span>
+        <span className="expand-label">{open ? "Close evidence" : "View evidence"}</span>
       </button>
       {open && (
         <div className="assignment-detail">
@@ -66,7 +67,7 @@ export default function App() {
 
   const processLabel = useMemo(() => {
     if (result?.retrieval_mode === "postgres_pgvector") return "PostgreSQL + pgvector";
-    return "Local deterministic preview";
+    return "Deterministic preview";
   }, [result]);
 
   async function runComposition() {
@@ -93,97 +94,123 @@ export default function App() {
   }
 
   return (
-    <main className="workspace">
-      <header className="topbar">
-        <a className="brand" href="/" aria-label="Delivery Composer home">
-          <svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 3h13v13H3zM12 12h13v13H12z" /></svg>
-          <span>Delivery<br />Composer</span>
-        </a>
-        <div className="topbar-context">
-          <span>Staffing intelligence</span>
-          <span className="live-marker"><i />Synthetic demo environment</span>
-        </div>
-        <span className="run-code">RUN / 01</span>
-      </header>
+    <main className="site-shell">
+      <section className="hero" aria-labelledby="page-title">
+        <header className="masthead">
+          <a className="wordmark" href="/" aria-label="Delivery Composer home">Delivery Composer</a>
+          <div className="masthead-meta">
+            <span>Concept for C86</span>
+            <span>Synthetic data only</span>
+          </div>
+          <span className="edition">MVP / 01</span>
+        </header>
 
-      <section className="workspace-heading">
-        <div>
-          <p className="eyebrow">Evidence-first delivery composition</p>
-          <h1>Build the team.<br /><em>Show the reasoning.</em></h1>
+        <div className="hero-layout">
+          <div className="hero-title">
+            <p className="eyebrow">Delivery intelligence</p>
+            <h1 id="page-title">Compose the team.<br /><em>Keep the evidence.</em></h1>
+          </div>
+          <div className="hero-statement">
+            <p>Turn an unstructured client brief into a defensible delivery-team recommendation—without turning AI into the decision maker.</p>
+            <span>Rules first / Retrieval second / Human decision always</span>
+          </div>
         </div>
-        <p className="heading-note">Hard constraints are evaluated before semantic similarity. A person makes the final decision.</p>
+
+        <ol className="method-strip" aria-label="Composition method">
+          <li><span>01</span>Extract requirements</li>
+          <li><span>02</span>Apply constraints</li>
+          <li><span>03</span>Retrieve evidence</li>
+          <li><span>04</span>Review decision</li>
+        </ol>
       </section>
 
-      <section className="composer-grid" aria-label="Delivery team composition workspace">
-        <section className="brief-pane">
-          <div className="pane-heading">
-            <span>01 / Client brief</span>
-            <button onClick={() => setBrief(FALLBACK_BRIEF)} className="text-button">Reset sample</button>
+      <section className="workbench" aria-label="Delivery team composition workspace">
+        <header className="section-intro">
+          <div>
+            <p className="section-number">01 / Compose</p>
+            <h2>From client need to accountable recommendation.</h2>
           </div>
-          <textarea
-            value={brief}
-            onChange={(event) => setBrief(event.target.value)}
-            maxLength={1600}
-            aria-label="Client brief"
-          />
-          <div className="brief-meta">
-            <span>{brief.length} / 1600</span>
-            <span>Unstructured input</span>
-          </div>
-          <button className="compose-button" onClick={runComposition} disabled={isRunning || brief.trim().length < 40}>
-            <span>{isRunning ? "Composing evidence…" : "Compose delivery team"}</span>
-            <b>→</b>
-          </button>
-          {error && <p className="error-message" role="alert">{error}</p>}
-        </section>
+          <p>The system separates deterministic constraints from semantic relevance, then shows the evidence a delivery leader needs to challenge the result.</p>
+        </header>
 
-        <section className="recommendation-pane">
-          <div className="pane-heading">
-            <span>02 / Recommended composition</span>
-            <span className="mode-label">{result ? processLabel : "Awaiting brief"}</span>
-          </div>
-
-          {!result ? (
-            <div className="empty-state">
-              <span className="empty-mark">↘</span>
-              <p>Run the sample brief to inspect the proposed team, hard-constraint checks, and supporting evidence.</p>
+        <div className="composer-grid">
+          <section className="brief-pane">
+            <div className="pane-heading">
+              <span>Client brief</span>
+              <button onClick={() => setBrief(FALLBACK_BRIEF)} className="text-button">Restore sample</button>
             </div>
-          ) : (
-            <div className="result-content">
-              <p className="result-summary">{result.summary}</p>
-              <div className="assignment-list">
-                {result.assignments.map((assignment, index) => <AssignmentRow key={assignment.consultant.id} assignment={assignment} index={index} />)}
+            <label htmlFor="client-brief">Engagement requirements</label>
+            <textarea
+              id="client-brief"
+              value={brief}
+              onChange={(event) => setBrief(event.target.value)}
+              maxLength={1600}
+            />
+            <div className="brief-meta">
+              <span>{brief.length} / 1600 characters</span>
+              <span>Unstructured input</span>
+            </div>
+            <button className="compose-button" onClick={runComposition} disabled={isRunning || brief.trim().length < 40}>
+              {isRunning ? "Composing evidence…" : "Compose delivery team"}
+            </button>
+            <p className="action-note">Runs against synthetic consultant profiles for this demonstration.</p>
+            {error && <p className="error-message" role="alert">{error}</p>}
+          </section>
+
+          <section className="recommendation-pane" aria-live="polite">
+            <div className="pane-heading">
+              <span>Recommended composition</span>
+              <span className="mode-label">{result ? processLabel : "Awaiting brief"}</span>
+            </div>
+
+            {!result ? (
+              <div className="empty-state">
+                <p className="empty-kicker">Ready for analysis</p>
+                <p>Run the sample brief to inspect the proposed team, hard-constraint checks, and source evidence.</p>
               </div>
-            </div>
-          )}
-        </section>
+            ) : (
+              <div className="result-content">
+                <p className="result-summary">{result.summary}</p>
+                <div className="assignment-list">
+                  {result.assignments.map((assignment, index) => <AssignmentRow key={assignment.consultant.id} assignment={assignment} index={index} />)}
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      </section>
 
-        <aside className="review-pane">
-          <div className="pane-heading"><span>03 / Human review</span></div>
-          {result ? (
-            <>
-              <dl className="requirements-list">
-                <div><dt>Skills</dt><dd>{result.requirements.required_skills.join(" · ")}</dd></div>
-                <div><dt>Clearance</dt><dd>{result.requirements.minimum_clearance.toUpperCase()} minimum</dd></div>
-                <div><dt>Source</dt><dd>{result.requirements.extraction_source === "gemini" ? "Structured AI extraction" : "Deterministic preview"}</dd></div>
-              </dl>
-              <div className="review-actions">
-                <p>Recommendation is advisory. Confirm with accountable delivery leadership.</p>
-                <button onClick={() => void submitReview("approved")} className="approve-button" disabled={reviewState !== null}>Approve team <b>↗</b></button>
+      <section className="review-section" aria-label="Human review">
+        <header className="review-heading">
+          <p className="section-number">02 / Decide</p>
+          <h2>Human review is the control plane.</h2>
+        </header>
+
+        {result ? (
+          <div className="review-grid">
+            <dl className="requirements-list">
+              <div><dt>Required skills</dt><dd>{result.requirements.required_skills.join(" · ")}</dd></div>
+              <div><dt>Minimum clearance</dt><dd>{result.requirements.minimum_clearance.toUpperCase()}</dd></div>
+              <div><dt>Requirement source</dt><dd>{result.requirements.extraction_source === "gemini" ? "Structured AI extraction" : "Deterministic preview"}</dd></div>
+            </dl>
+            <div className="review-actions">
+              <p>Recommendation is advisory. Confirm fit, availability, and accountability with delivery leadership.</p>
+              <div className="decision-buttons">
+                <button onClick={() => void submitReview("approved")} className="approve-button" disabled={reviewState !== null}>Approve proposed team</button>
                 <button onClick={() => void submitReview("needs_changes")} className="revise-button" disabled={reviewState !== null}>Request revision</button>
-                {reviewState && <span className="review-confirmation">Decision recorded: {reviewState === "approved" ? "approved" : "revision requested"}.</span>}
               </div>
-            </>
-          ) : (
-            <p className="review-empty">Human approval stays inactive until a proposed team is backed by recorded constraints.</p>
-          )}
-        </aside>
+              {reviewState && <span className="review-confirmation">Decision recorded: {reviewState === "approved" ? "approved" : "revision requested"}.</span>}
+            </div>
+          </div>
+        ) : (
+          <p className="review-empty">Human approval remains inactive until the recommendation is backed by recorded constraints and evidence.</p>
+        )}
       </section>
 
-      <footer className="system-footer">
-        <span>Rules first</span><i />
-        <span>Semantic retrieval second</span><i />
-        <span>Human decision always</span>
+      <footer className="site-footer">
+        <span>Delivery Composer</span>
+        <span>Evidence-backed staffing intelligence</span>
+        <span>Private MVP / Synthetic data</span>
       </footer>
     </main>
   );

@@ -91,6 +91,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Revision-loop browser check: empty feedback produced a clear validation error; a stored revision exposed working Change and Re-evaluate actions; role-replacement feedback swapped Data & AI Engineer for Cloud Engineer; prior-result disclosure showed both role deltas; approval exposed Change decision and Start new evaluation.
 - PR #5 canonical verifier: Ruff, 24 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10.
 - GitHub Actions on draft PR #5: API lint/tests and web production build pass.
+- Post-merge stack check: local `main` matches `origin/main` at PR #3's squash commit; rebased PR #4 and PR #5 are mergeable with passing GitHub Actions.
 
 # Next task
 

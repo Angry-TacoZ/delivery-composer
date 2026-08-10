@@ -4,7 +4,7 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 # Current status
 
-The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1, PR #2, and PR #3 are merged; PR #3's squash commit is `3d3de3c53cf1fc671d70593454e58b256814a83f`. Draft PR #4 now targets `main` for candidate comparison and overrides; draft PR #5 remains stacked on PR #4 for the actionable revision feedback loop.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 through PR #4 are merged; PR #4's squash commit is `c876ea944b46876e9e5a71ba5d1a6511a6b0293e`. Draft PR #5 now targets `main` for the actionable revision feedback loop.
 
 The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. Today's build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and Google Cloud billing are ready.
 
@@ -92,13 +92,13 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - PR #5 canonical verifier: Ruff, 24 API tests, frontend production build, and predeploy secret/API exposure scan pass on 2026-08-10.
 - GitHub Actions on draft PR #5: API lint/tests and web production build pass.
 - Post-merge stack check: local `main` matches `origin/main` at PR #3's squash commit; rebased PR #4 and PR #5 are mergeable with passing GitHub Actions.
+- PR #4 merge check: local `main` matches `origin/main` at `c876ea944b46876e9e5a71ba5d1a6511a6b0293e`; PR #5 was rebased onto that commit and retargeted to `main`.
 
 # Next task
 
-1. Merge draft PR #4 after its completed external review and passing verification.
-2. Rebase and retarget draft PR #5 onto `main` after PR #4 merges, then obtain external review and merge.
-3. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run, review, and revision persistence.
-4. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
+1. Obtain external review for draft PR #5, address actionable feedback, and merge.
+2. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run, review, and revision persistence.
+3. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
 
 # Risks or blockers
 

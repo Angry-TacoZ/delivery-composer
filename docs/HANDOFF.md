@@ -1,45 +1,55 @@
 # Goal
 
-Ship a hosted, polished Delivery Composer MVP for a short consulting conversation. The app recommends a synthetic delivery team from a client brief and makes its evidence and human-review boundary visible.
+Ship a hosted, polished Delivery Composer MVP for a short consulting conversation. The app recommends a synthetic delivery team from a client brief and makes constraints, evidence, and the human-review boundary visible.
 
 # Current status
 
-The local MVP is implemented and verified. Firebase project `composermvp` was created. Aiven PostgreSQL service `delivery-composer-db` is running. The app runs locally in deterministic preview mode until the Aiven and Gemini secrets are configured server-side.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. Draft PR #1 was opened from a planning-only commit before implementation, then the C86 visual alignment, animated trajectory field, repository documentation, screenshots, and CI were added on branch `codex/c86-visual-alignment`.
+
+The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. The live PostgreSQL/pgvector + Gemini path remains unconfigured until server-side secrets and Google Cloud billing are ready.
 
 # Decisions
 
-- Public, low-risk demo using synthetic data only.
+- Public-low-risk application boundary with synthetic data only; the GitHub repository remains private for the meeting.
 - React on Firebase Hosting; FastAPI on Cloud Run; Aiven PostgreSQL with pgvector; Gemini called only from the backend.
-- Service URI and Gemini key are server-only secrets. Do not put either in a browser build, commit, or handoff.
+- Database URI and Gemini key are server-only secrets. They may not enter the browser build, Git history, screenshots, or this handoff.
 - Firebase Hosting rewrites `/api/**` to Cloud Run service `delivery-composer-api` in `us-east1`.
-- UI direction: restrained dark operations workspace, not generic pill/card SaaS styling.
+- UI follows C86's graphite editorial language without using its logo or implying endorsement.
+- The generated raster trajectory field is animated by a slow transform layer and becomes still under reduced-motion preferences.
+- Recommendations remain advisory: rules first, semantic retrieval second, human decision always.
 
 # Changed files
 
-- `api/app/`: FastAPI API, bounded public input, per-instance rate limit, Gemini provider boundary, controlled three-connection PostgreSQL pool, pgvector bootstrap migration, and synthetic data seed process.
-- `web/`: React/Vite operations workspace with evidence expansion and a recorded human-review action.
-- `firebase.json` and `.firebaserc`: Firebase Hosting SPA and `/api/**` Cloud Run rewrite configuration.
-- `.codex/verify.json`: Canonical verification contract for the declared public-low-risk scope.
+- `web/src/App.tsx` and `web/src/styles.css`: C86-aligned responsive workflow, evidence expansion, decision state, and animated trajectory field.
+- `web/public/assets/c86-trajectory-field.png`: original text-free raster visual used by the hero and review section.
+- `README.md`: meeting-ready product case study, architecture, setup, verification, and accurate demo boundary.
+- `.github/workflows/ci.yml`: API lint/tests and web production build on pull requests and main.
+- `docs/C86_VISUAL_ALIGNMENT.md`: planning-first acceptance criteria and completed checklist.
+- `docs/design-qa.md` and `docs/screenshots/`: same-size visual comparison record plus desktop/mobile evidence.
 
 # Verification
 
-- Firebase CLI authenticated as the project owner; `composermvp` was created successfully.
+- Design QA: C86 reference and application capture compared together at 2048 × 1200; no P0, P1, or P2 findings.
+- Animated trajectory field: computed transform changed across a 1.2-second observation; reduced-motion override is present.
+- Browser workflow: compose, evidence expansion, and approve-review confirmation passed.
+- Responsive check: 390 × 844 viewport passed with no unintended horizontal overflow.
+- Browser console: no warnings or errors during desktop or mobile primary workflow.
 - Ruff: pass.
-- Pytest: 3 pass; two warnings are from third-party packages on Python 3.14.
+- Pytest: 3 passed; two dependency deprecation warnings on local Python 3.14.
 - Frontend TypeScript/Vite production build: pass.
-- Browser check: compose, evidence expansion, and approve-review workflow passed with no console errors.
+- npm production dependency audit: 0 vulnerabilities.
 - Predeploy secret/API exposure scan: pass.
-- Canonical verifier: pass when run with `PYTHONUTF8=1` because Windows cp1252 cannot print Vite's checkmark.
+- Canonical verifier: pass with `PYTHONUTF8=1` on Windows.
 
 # Next task
 
-- Link Cloud Billing/Blaze to `composermvp`; install Google Cloud CLI.
-- Create server-side `DATABASE_URL` and `GEMINI_API_KEY` secrets, run the Aiven migration, and seed six synthetic profiles with Gemini embeddings.
-- Deploy FastAPI to Cloud Run, deploy Firebase Hosting, verify the live workflow, then attach `composer.jameai.space`.
+1. Commit and push the verified implementation to draft PR #1 and confirm GitHub Actions pass.
+2. Review the private repository and live local demo for the meeting narrative.
+3. When ready to host: link Blaze billing, install Google Cloud CLI, create server-side `DATABASE_URL` and `GEMINI_API_KEY` secrets, run the Aiven migration/seed, deploy Cloud Run and Firebase Hosting, smoke-test the live workflow, then attach `composer.jameai.space`.
 
 # Risks or blockers
 
-- Google Cloud CLI is not installed yet.
-- Billing must be linked to `composermvp` before Cloud Run deployment.
-- Aiven and Gemini secrets must be configured outside source control; no real credentials have been added to the repository.
-- Public access is intentionally low-risk only: anonymous requests are bounded but not authenticated, and the rate limiter is per Cloud Run instance. Do not load real client or candidate data into this MVP.
+- Readiness status: `NOT PRODUCTION-READY` for public hosting until billing, server-side secrets, live database/model verification, deployment smoke tests, and rollback checks are complete.
+- Google Cloud CLI is not installed yet and Blaze billing must be linked before Cloud Run deployment.
+- Public access is intentionally low-risk only: anonymous requests are bounded but not authenticated, and the rate limiter is per Cloud Run instance. Do not use real client or personnel data.
+- The generated visual is C86-inspired concept art; it is not an official brand asset.

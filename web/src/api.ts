@@ -1,4 +1,4 @@
-import type { ComposeResponse, DemoBrief, PDFBriefResponse, ReviewResponse } from "./types";
+import type { ComposeResponse, DemoBrief, PDFBriefResponse, ReviewResponse, TeamOverride } from "./types";
 
 const API_BASE = "/api";
 
@@ -39,11 +39,12 @@ export async function recordReview(
   runId: string,
   status: "approved" | "needs_changes",
   notes: string,
+  overrides: TeamOverride[],
 ): Promise<ReviewResponse> {
   const response = await fetch(`${API_BASE}/runs/${runId}/review`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status, notes }),
+    body: JSON.stringify({ status, notes, overrides }),
   });
   if (!response.ok) throw new Error("The review decision could not be recorded.");
   return (await response.json()) as ReviewResponse;

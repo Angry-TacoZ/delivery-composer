@@ -1,10 +1,11 @@
+from collections import Counter
 from io import BytesIO
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from app.config import Settings
-from app.demo_data import DEMO_BRIEF
-from app.domain import BriefInput, ReviewInput
+from app.demo_data import CONSULTANTS, DEMO_BRIEF
+from app.domain import BriefInput, ReviewInput, TeamOverride
 from app.main import create_app
 from app.mock_briefs import MOCK_BRIEFS
 from app.pdf_briefs import MAX_PDF_BYTES
@@ -68,6 +69,23 @@ def test_demo_brief_library_exposes_three_bounded_synthetic_cases() -> None:
     }
     assert all(40 <= len(brief["brief"]) <= 1600 for brief in payload)
     assert all(set(brief) == {"slug", "reference", "title", "sector", "brief"} for brief in payload)
+
+
+def test_synthetic_roster_has_three_tradeoff_profiles_per_role() -> None:
+    expected_roles = {
+        "Delivery Lead",
+        "Security Architect",
+        "Data & AI Engineer",
+        "Cloud Engineer",
+        "Security Consultant",
+    }
+
+    assert len(CONSULTANTS) == 15
+    assert Counter(candidate.role for candidate in CONSULTANTS) == Counter(
+        {role: 3 for role in expected_roles}
+    )
+    assert all(candidate.evidence for candidate in CONSULTANTS)
+    assert all(candidate.considerations for candidate in CONSULTANTS)
 
 
 def test_demo_mode_does_not_initialize_configured_live_adapters() -> None:
@@ -174,6 +192,17 @@ def test_mock_briefs_produce_distinct_requirements_and_teams() -> None:
         composition["requirements"]["target_start"]
         for composition in compositions
     )
+    assert all(
+        len(assignment["alternatives"]) == 3
+        and len({option["consultant"]["id"] for option in assignment["alternatives"]}) == 3
+        and all(
+            option["consultant"]["role"] == assignment["role_on_team"]
+            for option in assignment["alternatives"]
+        )
+        and all(check["passed"] for check in assignment["hard_constraints"][:2])
+        for composition in compositions
+        for assignment in composition["assignments"]
+    )
     media_requirements = next(
         composition["requirements"]
         for composition in compositions
@@ -210,14 +239,81 @@ def test_demo_review_returns_session_provenance() -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "needs_changes"
     assert response.json()["persistence_mode"] == "session"
+    assert response.json()["override_count"] == 0
+
+
+def test_demo_review_records_a_valid_manual_override() -> None:
+    app = create_app(Settings(demo_mode=True))
+    with TestClient(app) as client:
+        composition = client.post("/api/compose", json={"raw_brief": DEMO_BRIEF}).json()
+        assignment = composition["assignments"][0]
+        alternative = next(
+            option
+            for option in assignment["alternatives"]
+            if option["consultant"]["id"] != assignment["consultant"]["id"]
+        )
+        response = client.post(
+            f"/api/runs/{composition['run_id']}/review",
+            json={
+                "status": "approved",
+                "notes": "Human selected the stronger sector-specific trade-off.",
+                "overrides": [
+                    {
+                        "role": assignment["role_on_team"],
+                        "original_consultant_id": assignment["consultant"]["id"],
+                        "selected_consultant_id": alternative["consultant"]["id"],
+                    }
+                ],
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json()["override_count"] == 1
+
+
+def test_demo_review_rejects_an_unoffered_override_candidate() -> None:
+    app = create_app(Settings(demo_mode=True))
+    with TestClient(app) as client:
+        composition = client.post("/api/compose", json={"raw_brief": DEMO_BRIEF}).json()
+        assignment = composition["assignments"][0]
+        response = client.post(
+            f"/api/runs/{composition['run_id']}/review",
+            json={
+                "status": "approved",
+                "notes": "Attempted fabricated candidate.",
+                "overrides": [
+                    {
+                        "role": assignment["role_on_team"],
+                        "original_consultant_id": assignment["consultant"]["id"],
+                        "selected_consultant_id": str(uuid4()),
+                    }
+                ],
+            },
+        )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "Override candidate was not offered for this role."
 
 
 def test_demo_review_is_stored_for_the_api_session() -> None:
     service = ComposerService(Settings(demo_mode=True))
     composition = service.compose(BriefInput(raw_brief=DEMO_BRIEF))
+    assignment = composition.assignments[0]
+    alternative = next(
+        option
+        for option in assignment.alternatives
+        if option.consultant.id != assignment.consultant.id
+    )
     review = ReviewInput(
         status="needs_changes",
         notes="Add an operations lead with transport-sector evidence.",
+        overrides=[
+            TeamOverride(
+                role=assignment.role_on_team,
+                original_consultant_id=assignment.consultant.id,
+                selected_consultant_id=alternative.consultant.id,
+            )
+        ],
     )
 
     persistence_mode = service.record_review(composition.run_id, review)

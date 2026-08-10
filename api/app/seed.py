@@ -10,11 +10,11 @@ from app.repository import CLEARANCE_RANK
 UPSERT_SQL = """
 INSERT INTO consultants (
     id, name, role, seniority, location, availability_date, clearance, clearance_rank,
-    skills, sectors, profile_text, evidence, embedding
+    skills, sectors, profile_text, evidence, considerations, embedding
 ) VALUES (
     %(id)s, %(name)s, %(role)s, %(seniority)s, %(location)s, %(availability_date)s,
     %(clearance)s, %(clearance_rank)s, %(skills)s, %(sectors)s, %(profile_text)s,
-    %(evidence)s, %(embedding)s::vector
+    %(evidence)s, %(considerations)s, %(embedding)s::vector
 )
 ON CONFLICT (id) DO UPDATE SET
     name = EXCLUDED.name,
@@ -28,6 +28,7 @@ ON CONFLICT (id) DO UPDATE SET
     sectors = EXCLUDED.sectors,
     profile_text = EXCLUDED.profile_text,
     evidence = EXCLUDED.evidence,
+    considerations = EXCLUDED.considerations,
     embedding = EXCLUDED.embedding,
     updated_at = now();
 """

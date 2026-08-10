@@ -40,12 +40,12 @@ Every profile remains fictional and includes verified-style evidence plus explic
 
 ## Acceptance criteria
 
-- [ ] Fifteen synthetic profiles exist: three for each of five role families.
-- [ ] Every returned role has exactly three distinct options with positives and considerations.
-- [ ] The recommended option is derived from constraints and deterministic scoring.
-- [ ] A user can compare all three options and make a manual override.
-- [ ] The selected assignment, summary state, and review payload reflect the override.
-- [ ] Invalid or fabricated override identifiers are rejected server-side.
-- [ ] Recomposition clears overrides.
-- [ ] Keyboard, reduced-motion, loading, and responsive behavior remain intact.
-- [ ] API tests, frontend build, secret scan, canonical verifier, and browser workflow pass.
+- [x] Fifteen synthetic profiles exist: three for each of five role families.
+- [x] Every returned role has exactly three distinct options with positives and considerations.
+- [x] The recommended option is derived from constraints and deterministic scoring.
+- [x] A user can compare all three options and make a manual override.
+- [x] The selected assignment, summary state, and review payload reflect the override.
+- [x] Invalid or fabricated override identifiers are rejected server-side.
+- [x] Recomposition clears overrides.
+- [x] Keyboard, reduced-motion, loading, and responsive behavior remain intact.
+- [x] API tests, frontend build, secret scan, canonical verifier, and browser workflow pass.

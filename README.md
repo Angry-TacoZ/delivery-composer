@@ -42,10 +42,18 @@ Three polished synthetic briefs are available under [`output/pdf/`](output/pdf/R
 
 These cases produce different titles, skills, sectors, target dates, roles, summaries, and ordered teams in deterministic preview mode. Regenerate the PDFs with `scripts/generate_mock_briefs.py`.
 
+## Candidate comparison and human override
+
+The synthetic roster contains fifteen fictional profiles: three exact-role candidates for each of the five role families used across the demo. Each recommendation can be expanded into a compact comparison ledger that shows positive evidence, considerations, semantic score, clearance, and availability for all three options.
+
+The service recommends only a candidate who passes the hard gates. A delivery leader can still select another candidate, including one with a clearly labeled exception, to demonstrate the real governance boundary. That override is validated against the composition run and carried into the final review record; recomposing or changing the brief clears it.
+
 ## What the demo proves
 
 - A realistic client brief can be converted into a three-person delivery recommendation.
 - Every proposed consultant is accompanied by the evidence and hard-constraint checks used to support the match.
+- Every requested role exposes three distinct candidates with visible positives and trade-offs.
+- A human can override the recommendation without hiding a failed constraint, and that decision is captured in the review.
 - AI-generated reasoning is advisory and cannot bypass clearance or availability rules.
 - The same interface supports a deterministic, no-cost preview and the configured PostgreSQL/pgvector + Gemini path.
 - The public-facing concept uses synthetic people and engagement data only.
@@ -131,7 +139,7 @@ Push-Location api
 Pop-Location
 ```
 
-`migrations.py` enables pgvector and creates the schema. `seed.py` generates embeddings for a small set of synthetic consultant profiles.
+`migrations.py` enables pgvector and creates the schema. `seed.py` generates embeddings for the fifteen-profile synthetic roster.
 
 ## Verification
 

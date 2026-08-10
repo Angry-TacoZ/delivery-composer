@@ -4,7 +4,7 @@ Ship a hosted, polished Delivery Composer MVP for a short consulting conversatio
 
 # Current status
 
-The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 was merged after external review. Draft PR #2 aligns the workflow with C86's IDEAL methodology. Stacked draft PR #3 targets the PR #2 branch and adds bounded PDF ingestion plus three distinct synthetic demonstration briefs.
+The private GitHub repository is published at `Angry-TacoZ/delivery-composer`. PR #1 and PR #2 are merged; PR #2's squash commit is `3fa9afb410694bad2d9aede9cfdebae2f51a6f96`. Draft PR #3 now targets `main` and adds bounded PDF ingestion plus three distinct synthetic demonstration briefs. Draft PR #4 is stacked on PR #3 and adds the fifteen-profile comparison and manual-override workflow.
 
 The local MVP is implemented and fully verified in deterministic preview mode. Firebase project `composermvp` exists and Aiven PostgreSQL service `delivery-composer-db` is running. Today's build intentionally does not require or initialize PostgreSQL or Gemini. The live PostgreSQL/pgvector + Gemini path remains an explicit post-validation upgrade until server-side secrets and Google Cloud billing are ready.
 
@@ -24,6 +24,8 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - The deterministic preview now derives sector-specific roles, target dates, summaries, and ordered teams for critical-infrastructure, financial-services, and media/broadcast scenarios.
 - `DEMO_MODE=true` now enforces adapter isolation even when credentials exist; `DEMO_MODE=false` fails fast unless both PostgreSQL and Gemini are configured.
 - The brief library uses full-width editorial rows with explicit synthetic references and sectors; it does not imitate or claim a real upload.
+- The synthetic roster contains three exact-role candidates for each of five role families. Hard-gate-eligible recommendations are presented first, while all alternatives retain visible positive evidence and considerations.
+- Human overrides are advisory decisions, not constraint rewrites: clearance and availability exceptions remain visible, and review identifiers are validated against the stored composition run.
 
 # Changed files
 
@@ -46,6 +48,9 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - `api/app/domain.py`, `api/app/main.py`, `web/src/api.ts`, and `web/src/types.ts`: typed synthetic brief-library contract shared across the API boundary.
 - `web/src/App.tsx` and `web/src/styles.css`: accessible inline demo brief selector replacing the meeting UI file picker.
 - `docs/design-qa.md` and `docs/screenshots/`: same-size visual comparison record plus desktop/mobile evidence.
+- `docs/MANUAL_OVERRIDE_PLAN.md`: planning-first comparison, decision-rule, and verification contract for PR #4.
+- `api/app/demo_data.py`, `api/app/domain.py`, `api/app/repository.py`, `api/app/migrations.py`, and `api/app/seed.py`: fifteen fictional profiles, three-option assignments, validated override payloads, and PostgreSQL-ready persistence.
+- `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: compact comparison ledger, visible exception selection, override provenance, and review submission.
 
 # Verification
 
@@ -56,7 +61,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Responsive check: 390 × 844 viewport passed with no unintended horizontal overflow.
 - Browser console: no warnings or errors during desktop or mobile primary workflow.
 - Ruff: pass.
-- Pytest: 16 passed; two dependency deprecation warnings on local Python 3.14.
+- Pytest: 19 passed; two dependency deprecation warnings on local Python 3.14.
 - Frontend TypeScript/Vite production build: pass.
 - npm production dependency audit: 0 vulnerabilities.
 - Predeploy secret/API exposure scan: pass.
@@ -70,11 +75,14 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Deterministic-mode browser replay: compose, evidence, IDEAL completion, review notes, and session-provenance confirmation passed after adapter isolation changes.
 - Execution-boundary tests: demo mode ignores configured live credentials; live mode rejects missing PostgreSQL or Gemini configuration.
 - Demo-library browser check: three synthetic cases were visible with references and sectors; financial-services selection changed the brief, requirements, roles, scores, and ordered team without layout clipping at the inspected desktop viewport.
+- Manual-override browser check: critical-infrastructure composition returned three Delivery Lead options; the higher-scoring ineligible candidate remained labeled with clearance and date exceptions, selection produced a visible human-override state, and approval confirmed one stored override.
+- Override-reset browser check: restoring the sample and recomposing removed the human-override state.
+- PR #4 canonical verifier: Ruff, 19 API tests, frontend production build, and predeploy secret/API exposure scan all passed on 2026-08-10.
 
 # Next task
 
-1. Obtain external review for draft PR #2, address actionable feedback, and merge.
-2. Retarget stacked draft PR #3 to `main` after PR #2 merges, then obtain external review for the demo brief library and retained PDF boundary.
+1. Obtain external review for draft PR #3, address actionable feedback, and merge.
+2. Obtain external review for stacked draft PR #4, address actionable feedback, and merge after PR #3.
 3. If the product direction is greenlit, enable the configured Aiven PostgreSQL/pgvector and Gemini adapters, then prove run and review persistence.
 4. When ready to host: complete the documented billing, secret, migration, deployment, smoke-test, rollback, and custom-domain gates.
 
@@ -85,3 +93,4 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Public access is intentionally low-risk only: anonymous requests are bounded but not authenticated, and the rate limiter is per Cloud Run instance. Do not use real client or personnel data.
 - The generated visual is C86-inspired concept art; it is not an official brand asset.
 - PDF parsing is a demonstration boundary, not a production document-security pipeline: OCR, antivirus scanning, content disarm, parser isolation, and persistent document lifecycle controls are out of scope.
+- The PostgreSQL migration, seed, vector ranking, and override upsert are implemented but not yet exercised against the live Aiven service; today's verified path remains deterministic session storage.

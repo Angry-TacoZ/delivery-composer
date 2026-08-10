@@ -2,7 +2,7 @@ from datetime import UTC, date, datetime
 from typing import Literal
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 Clearance = Literal["baseline", "sc", "dv"]
 ReviewStatus = Literal["approved", "needs_changes"]
@@ -41,6 +41,7 @@ class Consultant(BaseModel):
     sectors: list[str]
     profile_text: str
     evidence: list[str]
+    considerations: list[str]
 
 
 class ConstraintCheck(BaseModel):
@@ -49,12 +50,16 @@ class ConstraintCheck(BaseModel):
     evidence: str
 
 
-class TeamAssignment(BaseModel):
+class CandidateOption(BaseModel):
     consultant: Consultant
-    role_on_team: str
     semantic_score: float = Field(ge=0, le=1)
     hard_constraints: list[ConstraintCheck]
     explanation: str
+
+
+class TeamAssignment(CandidateOption):
+    role_on_team: str
+    alternatives: list[CandidateOption] = Field(min_length=3, max_length=3)
 
 
 class ComposeResponse(BaseModel):
@@ -66,15 +71,29 @@ class ComposeResponse(BaseModel):
     generated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
+class TeamOverride(BaseModel):
+    role: str = Field(min_length=2, max_length=80)
+    original_consultant_id: UUID
+    selected_consultant_id: UUID
+
+    @model_validator(mode="after")
+    def selected_candidate_must_change(self) -> "TeamOverride":
+        if self.original_consultant_id == self.selected_consultant_id:
+            raise ValueError("An override must select a different consultant.")
+        return self
+
+
 class ReviewInput(BaseModel):
     status: ReviewStatus
     notes: str = Field(default="", max_length=600)
+    overrides: list[TeamOverride] = Field(default_factory=list, max_length=4)
 
 
 class ReviewResponse(BaseModel):
     run_id: UUID
     status: ReviewStatus
     persistence_mode: ReviewPersistence
+    override_count: int = Field(ge=0, le=4)
     recorded_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 

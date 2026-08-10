@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { composeTeam, fetchDemoBriefs, recordReview } from "./api";
-import type { ComposeResponse, DemoBrief, ReviewResponse, TeamAssignment } from "./types";
+import type { CandidateOption, ComposeResponse, DemoBrief, ReviewResponse, TeamAssignment, TeamOverride } from "./types";
 
 const FALLBACK_BRIEF = `Build a three-person delivery team for a critical-infrastructure resilience programme.
 The client needs a security-first discovery and implementation plan covering zero trust,
@@ -21,41 +21,107 @@ function percent(score: number): string {
   return `${Math.round(score * 100)}%`;
 }
 
-function AssignmentRow({ assignment, index }: { assignment: TeamAssignment; index: number }) {
+function AssignmentRow({
+  assignment,
+  index,
+  selectedOption,
+  onSelect,
+  disabled,
+}: {
+  assignment: TeamAssignment;
+  index: number;
+  selectedOption: CandidateOption;
+  onSelect: (option: CandidateOption) => void;
+  disabled: boolean;
+}) {
   const [open, setOpen] = useState(index === 0);
-  const allChecksPass = assignment.hard_constraints.every((check) => check.passed);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const allChecksPass = selectedOption.hard_constraints.every((check) => check.passed);
+  const isOverridden = selectedOption.consultant.id !== assignment.consultant.id;
 
   return (
-    <article className={`assignment ${open ? "is-open" : ""}`}>
+    <article className={`assignment ${open ? "is-open" : ""} ${isOverridden ? "is-overridden" : ""}`}>
       <button className="assignment-trigger" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
         <span className="role-index">0{index + 1}</span>
         <span className="assignment-primary">
           <strong>{assignment.role_on_team}</strong>
-          <span>{assignment.consultant.name} · {assignment.consultant.seniority}</span>
+          <span>{selectedOption.consultant.name} · {selectedOption.consultant.seniority}</span>
         </span>
-        <span className="score-block" aria-label={`${percent(assignment.semantic_score)} semantic alignment`}>
-          <span>{percent(assignment.semantic_score)} alignment</span>
-          <i style={{ "--score": assignment.semantic_score } as React.CSSProperties} />
+        <span className="score-block" aria-label={`${percent(selectedOption.semantic_score)} semantic alignment`}>
+          <span>{percent(selectedOption.semantic_score)} alignment</span>
+          <i style={{ "--score": selectedOption.semantic_score } as React.CSSProperties} />
         </span>
-        <span className={allChecksPass ? "verified" : "exception"}>{allChecksPass ? "Verified" : "Review"}</span>
+        <span className={allChecksPass ? "verified" : "exception"}>
+          {isOverridden ? "Human override" : allChecksPass ? "Verified" : "Review"}
+        </span>
         <span className="expand-label">{open ? "Close evidence" : "View evidence"}</span>
       </button>
       {open && (
-        <div className="assignment-detail">
-          <div className="evidence-copy">
-            <p>{assignment.explanation}</p>
-            <ul>
-              {assignment.consultant.evidence.map((evidence) => <li key={evidence}>{evidence}</li>)}
-            </ul>
+        <div className="assignment-expanded">
+          <div className="assignment-detail">
+            <div className="evidence-copy">
+              <p>{selectedOption.explanation}</p>
+              <span className="evidence-label">Positive evidence</span>
+              <ul>
+                {selectedOption.consultant.evidence.map((evidence) => <li key={evidence}>{evidence}</li>)}
+              </ul>
+              <span className="evidence-label consideration-label">Considerations</span>
+              <ul className="consideration-list">
+                {selectedOption.consultant.considerations.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            </div>
+            <dl className="constraint-list">
+              {selectedOption.hard_constraints.map((check) => (
+                <div key={check.label}>
+                  <dt>{check.label}</dt>
+                  <dd className={check.passed ? "pass" : "fail"}>{check.evidence}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          <dl className="constraint-list">
-            {assignment.hard_constraints.map((check) => (
-              <div key={check.label}>
-                <dt>{check.label}</dt>
-                <dd className={check.passed ? "pass" : "fail"}>{check.evidence}</dd>
-              </div>
-            ))}
-          </dl>
+          <button
+            type="button"
+            className="compare-trigger"
+            onClick={() => setCompareOpen((value) => !value)}
+            aria-expanded={compareOpen}
+          >
+            <span>Compare candidates</span>
+            <span>{assignment.alternatives.length} options · {compareOpen ? "Close" : "Open ledger"}</span>
+          </button>
+          {compareOpen && (
+            <div className="candidate-ledger" aria-label={`Candidate options for ${assignment.role_on_team}`}>
+              {assignment.alternatives.map((option, optionIndex) => {
+                const isSelected = selectedOption.consultant.id === option.consultant.id;
+                const isRecommendation = assignment.consultant.id === option.consultant.id;
+                const passes = option.hard_constraints.every((check) => check.passed);
+                return (
+                  <div className={`candidate-option ${isSelected ? "is-selected" : ""}`} key={option.consultant.id}>
+                    <span className="candidate-option-index">0{optionIndex + 1}</span>
+                    <div className="candidate-option-summary">
+                      <strong>{option.consultant.name}</strong>
+                      <span>{option.consultant.seniority} · {percent(option.semantic_score)} alignment</span>
+                      <small>+ {option.consultant.evidence[0]}</small>
+                      <small className="candidate-concern">– {option.consultant.considerations[0]}</small>
+                    </div>
+                    <div className="candidate-option-decision">
+                      <span className={passes ? "candidate-eligible" : "candidate-exception"}>
+                        {passes ? "Eligible" : "Exception visible"}
+                      </span>
+                      <button type="button" onClick={() => onSelect(option)} disabled={disabled || isSelected}>
+                        {isSelected
+                          ? "Current"
+                          : isRecommendation
+                            ? "Restore recommendation"
+                            : passes
+                              ? "Use candidate"
+                              : "Select with exception"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </article>
@@ -76,6 +142,7 @@ export default function App() {
   const [briefSourceEdited, setBriefSourceEdited] = useState(false);
   const [isBriefLibraryOpen, setIsBriefLibraryOpen] = useState(false);
   const [briefLibraryError, setBriefLibraryError] = useState<string | null>(null);
+  const [teamOverrides, setTeamOverrides] = useState<Record<string, CandidateOption>>({});
 
   useEffect(() => {
     void fetchDemoBriefs()
@@ -90,10 +157,25 @@ export default function App() {
       .catch(() => setBriefLibraryError("The synthetic brief library could not be loaded."));
   }, []);
 
+  const overrideCount = Object.keys(teamOverrides).length;
+
+  const reviewOverrides = useMemo<TeamOverride[]>(() => {
+    if (!result) return [];
+    return result.assignments.flatMap((assignment) => {
+      const selected = teamOverrides[assignment.role_on_team];
+      if (!selected) return [];
+      return [{
+        role: assignment.role_on_team,
+        original_consultant_id: assignment.consultant.id,
+        selected_consultant_id: selected.consultant.id,
+      }];
+    });
+  }, [result, teamOverrides]);
+
   const processLabel = useMemo(() => {
-    if (result?.retrieval_mode === "postgres_pgvector") return "PostgreSQL + pgvector";
-    return "Deterministic preview";
-  }, [result]);
+    const mode = result?.retrieval_mode === "postgres_pgvector" ? "PostgreSQL + pgvector" : "Deterministic preview";
+    return overrideCount > 0 ? `${mode} · ${overrideCount} human ${overrideCount === 1 ? "override" : "overrides"}` : mode;
+  }, [overrideCount, result]);
 
   const idealStageStates = useMemo(() => IDEAL_STAGES.map((_, index) => {
     if (reviewState) return "complete";
@@ -107,6 +189,7 @@ export default function App() {
     setError(null);
     setReviewState(null);
     setReviewNotes("");
+    setTeamOverrides({});
     try {
       setResult(await composeTeam(brief));
     } catch (caughtError) {
@@ -120,6 +203,7 @@ export default function App() {
     setResult(null);
     setReviewState(null);
     setReviewNotes("");
+    setTeamOverrides({});
   }
 
   function restoreSample() {
@@ -148,6 +232,20 @@ export default function App() {
     resetEvaluation();
   }
 
+  function selectCandidate(assignment: TeamAssignment, option: CandidateOption) {
+    setTeamOverrides((current) => {
+      const next = { ...current };
+      if (option.consultant.id === assignment.consultant.id) {
+        delete next[assignment.role_on_team];
+      } else {
+        next[assignment.role_on_team] = option;
+      }
+      return next;
+    });
+    setReviewState(null);
+    setError(null);
+  }
+
   async function submitReview(status: "approved" | "needs_changes") {
     if (!result || reviewState || reviewSaveInFlight.current) return;
 
@@ -155,7 +253,7 @@ export default function App() {
     setIsReviewSaving(true);
     setError(null);
     try {
-      setReviewState(await recordReview(result.run_id, status, reviewNotes.trim()));
+      setReviewState(await recordReview(result.run_id, status, reviewNotes.trim(), reviewOverrides));
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Review could not be saved.");
     } finally {
@@ -301,7 +399,16 @@ export default function App() {
               <div className="result-content">
                 <p className="result-summary">{result.summary}</p>
                 <div className="assignment-list">
-                  {result.assignments.map((assignment, index) => <AssignmentRow key={assignment.consultant.id} assignment={assignment} index={index} />)}
+                  {result.assignments.map((assignment, index) => (
+                    <AssignmentRow
+                      key={assignment.consultant.id}
+                      assignment={assignment}
+                      index={index}
+                      selectedOption={teamOverrides[assignment.role_on_team] ?? assignment}
+                      onSelect={(option) => selectCandidate(assignment, option)}
+                      disabled={reviewState !== null || isReviewSaving}
+                    />
+                  ))}
                 </div>
               </div>
             )}
@@ -325,6 +432,11 @@ export default function App() {
             </dl>
             <div className="review-actions">
               <p>Recommendation is advisory. Confirm fit, availability, and accountability with delivery leadership.</p>
+              {overrideCount > 0 && (
+                <p className="override-summary" role="status">
+                  {overrideCount} human {overrideCount === 1 ? "override" : "overrides"} recorded for review. Constraint exceptions remain visible.
+                </p>
+              )}
               <label className="review-notes-label" htmlFor="review-notes">
                 Learn / Review notes <span>Optional</span>
               </label>
@@ -348,7 +460,7 @@ export default function App() {
               {isReviewSaving && <span className="review-saving" role="status">Saving decision...</span>}
               {reviewState && (
                 <span className="review-confirmation">
-                  {reviewState.status === "approved" ? "Team approved" : "Revision requested"}. Feedback stored {reviewState.persistence_mode === "postgres" ? "in PostgreSQL" : "for this API session"}.
+                  {reviewState.status === "approved" ? "Team approved" : "Revision requested"}. Feedback stored {reviewState.persistence_mode === "postgres" ? "in PostgreSQL" : "for this API session"}{reviewState.override_count > 0 ? ` with ${reviewState.override_count} human ${reviewState.override_count === 1 ? "override" : "overrides"}` : ""}.
                 </span>
               )}
             </div>

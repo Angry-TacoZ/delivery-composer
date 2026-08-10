@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS consultants (
     sectors TEXT[] NOT NULL DEFAULT '{}',
     profile_text TEXT NOT NULL,
     evidence TEXT[] NOT NULL DEFAULT '{}',
+    considerations TEXT[] NOT NULL DEFAULT '{}',
     embedding vector(768) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -30,6 +31,9 @@ CREATE INDEX IF NOT EXISTS consultants_clearance_availability_idx
 CREATE INDEX IF NOT EXISTS consultants_skills_gin_idx ON consultants USING gin (skills);
 CREATE INDEX IF NOT EXISTS consultants_embedding_hnsw_idx
     ON consultants USING hnsw (embedding vector_cosine_ops);
+
+ALTER TABLE consultants
+    ADD COLUMN IF NOT EXISTS considerations TEXT[] NOT NULL DEFAULT '{}';
 
 CREATE TABLE IF NOT EXISTS engagement_briefs (
     id UUID PRIMARY KEY,
@@ -51,8 +55,14 @@ CREATE TABLE IF NOT EXISTS review_decisions (
     run_id UUID NOT NULL REFERENCES composition_runs(id),
     status TEXT NOT NULL CHECK (status IN ('approved', 'needs_changes')),
     notes TEXT NOT NULL DEFAULT '' CHECK (char_length(notes) <= 600),
+    overrides JSONB NOT NULL DEFAULT '[]'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE review_decisions
+    ADD COLUMN IF NOT EXISTS overrides JSONB NOT NULL DEFAULT '[]'::jsonb;
+CREATE UNIQUE INDEX IF NOT EXISTS review_decisions_run_id_uidx
+    ON review_decisions (run_id);
 """
 
 

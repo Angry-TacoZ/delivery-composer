@@ -52,3 +52,10 @@ export interface ReviewResponse {
   persistence_mode: "session" | "postgres";
   recorded_at: string;
 }
+
+export interface PDFBriefResponse {
+  file_name: string;
+  page_count: number;
+  character_count: number;
+  text: string;
+}

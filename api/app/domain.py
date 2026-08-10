@@ -76,3 +76,10 @@ class ReviewResponse(BaseModel):
     status: ReviewStatus
     persistence_mode: ReviewPersistence
     recorded_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+class PDFBriefResponse(BaseModel):
+    file_name: str
+    page_count: int = Field(ge=1, le=5)
+    character_count: int = Field(ge=40, le=1600)
+    text: str = Field(min_length=40, max_length=1600)

@@ -49,19 +49,19 @@ The deterministic preview must derive distinct titles, skills, sectors, roles, s
 
 ## Acceptance criteria
 
-- [ ] A user can select a PDF from the client brief pane and see its extracted text before evaluation.
-- [ ] Manual paste, restore-sample, PDF upload, and evaluation all use the same editable brief field.
-- [ ] The server enforces MIME, extension, signature, byte-size, page-count, encryption, text-presence, and text-length boundaries.
-- [ ] Upload errors are specific enough to recover from but expose no stack traces, file paths, or parser internals.
-- [ ] Uploaded bytes are not persisted and no PDF content is logged.
-- [ ] The UI identifies the source filename, page count, and extracted character count without pill-heavy styling.
-- [ ] Keyboard, label, loading, success, error, and mobile states remain accessible.
-- [ ] Three final synthetic PDFs are generated, text-extracted, rendered to PNG, and visually inspected.
-- [ ] Each synthetic brief produces different structured requirements and a different ordered team in deterministic preview mode.
-- [ ] Dynamic summaries describe the actual requested roles rather than the original hard-coded cyber scenario.
-- [ ] Tests cover a valid PDF and malformed, wrong-type, oversized, encrypted, image-only, too-many-page, and overlong cases.
-- [ ] Existing manual composition, IDEAL stages, evidence expansion, and review persistence continue to work.
-- [ ] README and handoff describe the PDF boundary, sample artifacts, and stacked-PR dependency.
+- [x] A user can select a PDF from the client brief pane and see its extracted text before evaluation.
+- [x] Manual paste, restore-sample, PDF upload, and evaluation all use the same editable brief field.
+- [x] The server enforces MIME, extension, signature, byte-size, page-count, encryption, text-presence, and text-length boundaries.
+- [x] Upload errors are specific enough to recover from but expose no stack traces, file paths, or parser internals.
+- [x] Uploaded bytes are not persisted and no PDF content is logged.
+- [x] The UI identifies the source filename, page count, and extracted character count without pill-heavy styling.
+- [x] Keyboard, label, loading, success, error, and mobile states remain accessible.
+- [x] Three final synthetic PDFs are generated, text-extracted, rendered to PNG, and visually inspected.
+- [x] Each synthetic brief produces different structured requirements and a different ordered team in deterministic preview mode.
+- [x] Dynamic summaries describe the actual requested roles rather than the original hard-coded cyber scenario.
+- [x] Tests cover a valid PDF and malformed, wrong-type, oversized, encrypted, image-only, too-many-page, and overlong cases.
+- [x] Existing manual composition, IDEAL stages, evidence expansion, and review persistence continue to work.
+- [x] README and handoff describe the PDF boundary, sample artifacts, and stacked-PR dependency.
 - [ ] Canonical verification, dependency audit, predeploy secret scan, browser checks, and GitHub Actions pass.
 
 ## Out of scope

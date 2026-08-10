@@ -75,7 +75,18 @@ h1 em { color: #d7d5d2; font-family: Georgia, "Times New Roman", serif; font-wei
 .pane-heading { min-height: 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 17px; border-bottom: 1px solid #55575a; color: #d8d7d3; font-size: 11px; letter-spacing: .115em; text-transform: uppercase; }
 .mode-label { color: #969795; letter-spacing: .025em; text-transform: none; }
 .text-button { padding: 0; border: 0; background: none; color: #8fd1d9; font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+.brief-source-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center; padding: 22px 0; border-bottom: 1px solid #505255; }
+.brief-source-copy { min-width: 0; display: grid; gap: 6px; }
+.brief-source-copy > span { color: #8f9090; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+.brief-source-copy strong { overflow: hidden; color: #e3e2de; font-family: Georgia, "Times New Roman", serif; font-size: 16px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.brief-source-copy small { color: #818280; font-size: 10px; line-height: 1.4; }
+.pdf-upload-control { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 16px; border: 1px solid rgba(255,255,255,.42); color: #d9d8d4; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; transition: border-color .2s, background-color .2s; }
+.pdf-upload-control:hover { border-color: #eef0ed; background: rgba(255,255,255,.035); }
+.pdf-upload-control:focus-within { outline: 2px solid #8fd1d9; outline-offset: 3px; }
+.pdf-upload-control input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.pdf-upload-control:has(input:disabled) { cursor: not-allowed; opacity: .48; }
 .brief-pane label { display: block; margin-top: 32px; color: #8f9090; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.brief-pane .pdf-upload-control { display: inline-flex; margin-top: 0; color: #d9d8d4; }
 textarea { display: block; width: 100%; min-height: 330px; resize: vertical; margin-top: 10px; padding: 20px 0; border: 0; border-top: 1px solid #505255; border-bottom: 1px solid #505255; outline: none; color: #e8e6e1; background: transparent; font-family: Georgia, "Times New Roman", serif; font-size: 18px; line-height: 1.55; }
 textarea:focus { border-color: #8fd1d9; }
 .brief-meta { display: flex; justify-content: space-between; gap: 20px; padding-top: 11px; color: #818280; font-size: 10px; letter-spacing: .03em; }
@@ -172,6 +183,8 @@ textarea:focus { border-color: #8fd1d9; }
   .method-strip li { min-height: 118px; padding: 14px; }
   .section-intro { gap: 35px; padding-block: 62px 50px; }
   .brief-pane, .recommendation-pane { padding-inline: 20px; }
+  .brief-source-row { grid-template-columns: 1fr; gap: 16px; }
+  .pdf-upload-control { width: 100%; }
   .assignment-trigger { grid-template-columns: 28px minmax(0,1fr) 78px; }
   .assignment-trigger .verified, .assignment-trigger .exception { display: none; }
   .expand-label { grid-column: 2 / -1; }

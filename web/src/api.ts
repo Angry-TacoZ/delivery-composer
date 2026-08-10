@@ -1,4 +1,4 @@
-import type { ComposeResponse, ReviewResponse } from "./types";
+import type { ComposeResponse, PDFBriefResponse, ReviewResponse } from "./types";
 
 const API_BASE = "/api";
 
@@ -20,6 +20,20 @@ export async function composeTeam(rawBrief: string): Promise<ComposeResponse> {
     throw new Error(body.detail ?? "The team composition could not be completed.");
   }
   return (await response.json()) as ComposeResponse;
+}
+
+export async function extractPDFBrief(file: File): Promise<PDFBriefResponse> {
+  const body = new FormData();
+  body.append("file", file);
+  const response = await fetch(`${API_BASE}/extract-brief`, {
+    method: "POST",
+    body,
+  });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => ({}))) as { detail?: string };
+    throw new Error(payload.detail ?? "The PDF brief could not be extracted.");
+  }
+  return (await response.json()) as PDFBriefResponse;
 }
 
 export async function recordReview(

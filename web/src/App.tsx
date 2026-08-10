@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { composeTeam, fetchDemoBrief, recordReview } from "./api";
-import type { ComposeResponse, ReviewResponse, TeamAssignment } from "./types";
+import { composeTeam, extractPDFBrief, fetchDemoBrief, recordReview } from "./api";
+import type { ComposeResponse, PDFBriefResponse, ReviewResponse, TeamAssignment } from "./types";
 
 const FALLBACK_BRIEF = `Build a three-person delivery team for a critical-infrastructure resilience programme.
 The client needs a security-first discovery and implementation plan covering zero trust,
@@ -69,6 +69,9 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [reviewState, setReviewState] = useState<ReviewResponse | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [pdfSource, setPdfSource] = useState<PDFBriefResponse | null>(null);
+  const [pdfSourceEdited, setPdfSourceEdited] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
 
   useEffect(() => {
     void fetchDemoBrief().then(setBrief).catch(() => undefined);
@@ -97,6 +100,44 @@ export default function App() {
       setError(caughtError instanceof Error ? caughtError.message : "Analysis failed.");
     } finally {
       setIsRunning(false);
+    }
+  }
+
+  function resetEvaluation() {
+    setResult(null);
+    setReviewState(null);
+    setReviewNotes("");
+  }
+
+  function restoreSample() {
+    setBrief(FALLBACK_BRIEF);
+    setPdfSource(null);
+    setPdfSourceEdited(false);
+    setError(null);
+    resetEvaluation();
+  }
+
+  function editBrief(nextBrief: string) {
+    setBrief(nextBrief);
+    if (pdfSource) setPdfSourceEdited(true);
+    setError(null);
+    resetEvaluation();
+  }
+
+  async function uploadPDF(file: File | undefined) {
+    if (!file) return;
+    setIsExtracting(true);
+    setError(null);
+    resetEvaluation();
+    try {
+      const extracted = await extractPDFBrief(file);
+      setBrief(extracted.text);
+      setPdfSource(extracted);
+      setPdfSourceEdited(false);
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "The PDF brief could not be extracted.");
+    } finally {
+      setIsExtracting(false);
     }
   }
 
@@ -159,23 +200,48 @@ export default function App() {
           <section className="brief-pane">
             <div className="pane-heading">
               <span>Identify / Client brief</span>
-              <button onClick={() => setBrief(FALLBACK_BRIEF)} className="text-button">Restore sample</button>
+              <button onClick={restoreSample} className="text-button">Restore sample</button>
+            </div>
+            <div className="brief-source-row">
+              <div className="brief-source-copy" id="brief-source-note">
+                <span>Brief source</span>
+                <strong>{pdfSource ? pdfSource.file_name : "Manual text"}</strong>
+                <small>
+                  {pdfSource
+                    ? `${pdfSource.page_count} ${pdfSource.page_count === 1 ? "page" : "pages"} · ${pdfSource.character_count} extracted characters${pdfSourceEdited ? " · edited" : ""}`
+                    : "Paste a concise brief or upload a searchable PDF."}
+                </small>
+              </div>
+              <label className="pdf-upload-control">
+                <input
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  disabled={isExtracting || isRunning}
+                  onChange={(event) => {
+                    const input = event.currentTarget;
+                    void uploadPDF(input.files?.[0]).finally(() => { input.value = ""; });
+                  }}
+                />
+                <span>{isExtracting ? "Extracting PDF..." : "Upload PDF"}</span>
+              </label>
             </div>
             <label htmlFor="client-brief">Engagement requirements</label>
             <textarea
               id="client-brief"
               value={brief}
-              onChange={(event) => setBrief(event.target.value)}
+              onChange={(event) => editBrief(event.target.value)}
               maxLength={1600}
+              disabled={isExtracting}
+              aria-describedby="brief-source-note"
             />
             <div className="brief-meta">
               <span>{brief.length} / 1600 characters</span>
               <span>Unstructured input</span>
             </div>
-            <button className="compose-button" onClick={runComposition} disabled={isRunning || brief.trim().length < 40}>
+            <button className="compose-button" onClick={runComposition} disabled={isRunning || isExtracting || brief.trim().length < 40}>
               {isRunning ? "Composing evidence…" : "Compose delivery team"}
             </button>
-            <p className="action-note">Runs against synthetic consultant profiles for this demonstration.</p>
+            <p className="action-note">PDF text is extracted server-side, returned here for review, and not stored by the upload endpoint.</p>
             {error && <p className="error-message" role="alert">{error}</p>}
           </section>
 

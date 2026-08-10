@@ -21,6 +21,139 @@ function percent(score: number): string {
   return `${Math.round(score * 100)}%`;
 }
 
+function ComparisonDialog({
+  role,
+  current,
+  challenger,
+  recommendationId,
+  disabled,
+  onSelect,
+  onClose,
+}: {
+  role: string;
+  current: CandidateOption;
+  challenger: CandidateOption;
+  recommendationId: string;
+  disabled: boolean;
+  onSelect: () => void;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const scoreDelta = Math.round((challenger.semantic_score - current.semantic_score) * 100);
+  const challengerPasses = challenger.hard_constraints.every((check) => check.passed);
+  const restoresRecommendation = challenger.consultant.id === recommendationId;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, []);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="comparison-dialog"
+      aria-labelledby={`comparison-title-${challenger.consultant.id}`}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+        }
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div className="comparison-shell">
+        <header className="comparison-header">
+          <div>
+            <span>Candidate comparison</span>
+            <h3 id={`comparison-title-${challenger.consultant.id}`}>{role}</h3>
+          </div>
+          <button type="button" className="comparison-close" onClick={onClose} aria-label="Close candidate comparison">
+            Close
+          </button>
+        </header>
+
+        <div className="comparison-scoreboard" aria-label="Alignment score comparison">
+          <div>
+            <span>Current assignment</span>
+            <strong>{current.consultant.name}</strong>
+            <b>{percent(current.semantic_score)}</b>
+          </div>
+          <div className={scoreDelta > 0 ? "delta-positive" : scoreDelta < 0 ? "delta-negative" : "delta-neutral"}>
+            <span>Alignment delta</span>
+            <strong>{scoreDelta > 0 ? "+" : ""}{scoreDelta} pts</strong>
+          </div>
+          <div>
+            <span>Challenger</span>
+            <strong>{challenger.consultant.name}</strong>
+            <b>{percent(challenger.semantic_score)}</b>
+          </div>
+        </div>
+
+        <div className="comparison-columns">
+          {[{ label: "Current", option: current }, { label: "Challenger", option: challenger }].map(({ label, option }) => (
+            <section key={label}>
+              <span className="comparison-column-label">{label}</span>
+              <h4>{option.consultant.seniority}</h4>
+              <span className="evidence-label">Positive evidence</span>
+              <ul>
+                {option.consultant.evidence.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+              <span className="evidence-label consideration-label">Considerations</span>
+              <ul className="comparison-considerations">
+                {option.consultant.considerations.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+              <dl>
+                {option.hard_constraints.map((check) => (
+                  <div key={check.label}>
+                    <dt>{check.label}</dt>
+                    <dd className={check.passed ? "pass" : "fail"}>{check.passed ? "Pass" : "Exception"}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          ))}
+        </div>
+
+        <footer className="comparison-actions">
+          <p>
+            {challengerPasses
+              ? "All recorded hard constraints pass."
+              : "This selection retains the visible constraint exceptions for human review."}
+          </p>
+          <div>
+            <button type="button" onClick={onClose}>Keep current</button>
+            <button
+              type="button"
+              className="comparison-select"
+              disabled={disabled}
+              onClick={() => {
+                onSelect();
+                onClose();
+              }}
+            >
+              {restoresRecommendation
+                ? "Restore recommendation"
+                : challengerPasses
+                  ? "Select challenger"
+                  : "Select with exception"}
+            </button>
+          </div>
+        </footer>
+      </div>
+    </dialog>
+  );
+}
+
 function AssignmentRow({
   assignment,
   index,
@@ -35,7 +168,7 @@ function AssignmentRow({
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(index === 0);
-  const [compareOpen, setCompareOpen] = useState(false);
+  const [comparisonCandidate, setComparisonCandidate] = useState<CandidateOption | null>(null);
   const allChecksPass = selectedOption.hard_constraints.every((check) => check.passed);
   const isOverridden = selectedOption.consultant.id !== assignment.consultant.id;
 
@@ -79,50 +212,48 @@ function AssignmentRow({
               ))}
             </dl>
           </div>
-          <button
-            type="button"
-            className="compare-trigger"
-            onClick={() => setCompareOpen((value) => !value)}
-            aria-expanded={compareOpen}
-          >
-            <span>Compare candidates</span>
-            <span>{assignment.alternatives.length} options · {compareOpen ? "Close" : "Open ledger"}</span>
-          </button>
-          {compareOpen && (
-            <div className="candidate-ledger" aria-label={`Candidate options for ${assignment.role_on_team}`}>
-              {assignment.alternatives.map((option, optionIndex) => {
-                const isSelected = selectedOption.consultant.id === option.consultant.id;
-                const isRecommendation = assignment.consultant.id === option.consultant.id;
+          <div className="runners-up" aria-label={`Runners-up for ${assignment.role_on_team}`}>
+            <div className="runners-up-heading">
+              <span>Runners-up</span>
+              <span>Select a person to compare</span>
+            </div>
+            {assignment.alternatives
+              .filter((option) => option.consultant.id !== selectedOption.consultant.id)
+              .map((option, optionIndex) => {
                 const passes = option.hard_constraints.every((check) => check.passed);
                 return (
-                  <div className={`candidate-option ${isSelected ? "is-selected" : ""}`} key={option.consultant.id}>
-                    <span className="candidate-option-index">0{optionIndex + 1}</span>
-                    <div className="candidate-option-summary">
+                  <button
+                    type="button"
+                    className="runner-up"
+                    key={option.consultant.id}
+                    onClick={() => setComparisonCandidate(option)}
+                  >
+                    <span className="runner-rank">0{optionIndex + 2}</span>
+                    <span className="runner-person">
                       <strong>{option.consultant.name}</strong>
-                      <span>{option.consultant.seniority} · {percent(option.semantic_score)} alignment</span>
-                      <small>+ {option.consultant.evidence[0]}</small>
-                      <small className="candidate-concern">– {option.consultant.considerations[0]}</small>
-                    </div>
-                    <div className="candidate-option-decision">
-                      <span className={passes ? "candidate-eligible" : "candidate-exception"}>
-                        {passes ? "Eligible" : "Exception visible"}
-                      </span>
-                      <button type="button" onClick={() => onSelect(option)} disabled={disabled || isSelected}>
-                        {isSelected
-                          ? "Current"
-                          : isRecommendation
-                            ? "Restore recommendation"
-                            : passes
-                              ? "Use candidate"
-                              : "Select with exception"}
-                      </button>
-                    </div>
-                  </div>
+                      <small>{option.consultant.seniority}</small>
+                    </span>
+                    <span className="runner-score">{percent(option.semantic_score)}</span>
+                    <span className={passes ? "candidate-eligible" : "candidate-exception"}>
+                      {passes ? "Eligible" : "Exception"}
+                    </span>
+                    <span className="runner-compare">Compare</span>
+                  </button>
                 );
               })}
-            </div>
-          )}
+          </div>
         </div>
+      )}
+      {comparisonCandidate && (
+        <ComparisonDialog
+          role={assignment.role_on_team}
+          current={selectedOption}
+          challenger={comparisonCandidate}
+          recommendationId={assignment.consultant.id}
+          disabled={disabled}
+          onSelect={() => onSelect(comparisonCandidate)}
+          onClose={() => setComparisonCandidate(null)}
+        />
       )}
     </article>
   );

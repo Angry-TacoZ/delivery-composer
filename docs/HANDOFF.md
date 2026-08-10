@@ -26,6 +26,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - The brief library uses full-width editorial rows with explicit synthetic references and sectors; it does not imitate or claim a real upload.
 - The synthetic roster contains three exact-role candidates for each of five role families. Hard-gate-eligible recommendations are presented first, while all alternatives retain visible positive evidence and considerations.
 - Human overrides are advisory decisions, not constraint rewrites: clearance and availability exceptions remain visible, and review identifiers are validated against the stored composition run.
+- Opening an assignment reveals both scored runners-up. Each runner opens a native current-versus-challenger comparison dialog with RPG-style score deltas, evidence, concerns, constraints, and the override action.
 
 # Changed files
 
@@ -50,7 +51,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - `docs/design-qa.md` and `docs/screenshots/`: same-size visual comparison record plus desktop/mobile evidence.
 - `docs/MANUAL_OVERRIDE_PLAN.md`: planning-first comparison, decision-rule, and verification contract for PR #4.
 - `api/app/demo_data.py`, `api/app/domain.py`, `api/app/repository.py`, `api/app/migrations.py`, and `api/app/seed.py`: fifteen fictional profiles, three-option assignments, validated override payloads, and PostgreSQL-ready persistence.
-- `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: compact comparison ledger, visible exception selection, override provenance, and review submission.
+- `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: scored runners-up, accessible comparison dialog, visible exception selection, override provenance, and review submission.
 
 # Verification
 
@@ -79,6 +80,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Override-reset browser check: restoring the sample and recomposing removed the human-override state.
 - PR #4 canonical verifier: Ruff, 19 API tests, frontend production build, and predeploy secret/API exposure scan all passed on 2026-08-10.
 - GitHub Actions on draft PR #4: API lint/tests and web production build pass.
+- Comparison-dialog browser check: opening evidence exposed both scored runners-up; Priya opened against Theo with a `+8 pts` delta and two visible hard-constraint exceptions; Escape closed the dialog; selecting the challenger created the human-override state.
 
 # Next task
 

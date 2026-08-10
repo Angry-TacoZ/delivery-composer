@@ -8,7 +8,7 @@ Expand the synthetic roster from five to fifteen profiles: three candidates for 
 
 - **Visual thesis:** extend the graphite operations workbench with a compact comparison ledger, not candidate cards or recruitment UI.
 - **Content plan:** recommended consultant first, three role-specific options second, visible trade-offs third, explicit human decision last.
-- **Interaction thesis:** evidence expands in place; candidate rows reveal comparison detail; an override updates the selected team and leaves a visible decision marker.
+- **Interaction thesis:** opening a person reveals the two runners-up and their scores in place; choosing Compare opens a focused current-versus-challenger overlay with RPG-style stat deltas; an override updates the selected team and leaves a visible decision marker.
 
 ## Synthetic roster
 
@@ -27,7 +27,7 @@ Every profile remains fictional and includes verified-style evidence plus explic
 1. The server returns exactly three candidates for every requested role.
 2. The default recommendation must satisfy clearance and availability; exact role matches outrank unrelated profiles.
 3. Failed constraints remain visible in the comparison rather than being hidden.
-4. A human may select another candidate, including one with a visible exception, but the UI must never relabel that exception as verified.
+4. A human may compare the current assignment with either runner-up in a focused dialog, then select another candidate, including one with a visible exception; the UI must never relabel that exception as verified.
 5. Overrides record the role, original recommendation, and selected consultant with the final review.
 6. Changing the brief or composing again clears all prior overrides.
 
@@ -43,7 +43,9 @@ Every profile remains fictional and includes verified-style evidence plus explic
 - [x] Fifteen synthetic profiles exist: three for each of five role families.
 - [x] Every returned role has exactly three distinct options with positives and considerations.
 - [x] The recommended option is derived from constraints and deterministic scoring.
-- [x] A user can compare all three options and make a manual override.
+- [x] Opening evidence shows both runners-up and their alignment scores.
+- [x] Compare opens an accessible current-versus-challenger dialog with score delta, evidence, considerations, and constraint states.
+- [x] A user can make or restore a manual override from the comparison dialog.
 - [x] The selected assignment, summary state, and review payload reflect the override.
 - [x] Invalid or fabricated override identifiers are rejected server-side.
 - [x] Recomposition clears overrides.

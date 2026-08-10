@@ -44,7 +44,7 @@ These cases produce different titles, skills, sectors, target dates, roles, summ
 
 ## Candidate comparison and human override
 
-The synthetic roster contains fifteen fictional profiles: three exact-role candidates for each of the five role families used across the demo. Each recommendation can be expanded into a compact comparison ledger that shows positive evidence, considerations, semantic score, clearance, and availability for all three options.
+The synthetic roster contains fifteen fictional profiles: three exact-role candidates for each of the five role families used across the demo. Opening a recommendation shows both runners-up and their alignment scores. Selecting either runner-up opens a focused current-versus-challenger comparison with the score delta, positive evidence, considerations, clearance, and availability arranged like an RPG equipment comparison while retaining the restrained C86 visual system.
 
 The service recommends only a candidate who passes the hard gates. A delivery leader can still select another candidate, including one with a clearly labeled exception, to demonstrate the real governance boundary. That override is validated against the composition run and carried into the final review record; recomposing or changing the brief clears it.
 

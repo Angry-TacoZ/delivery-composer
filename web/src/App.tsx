@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { composeTeam, extractPDFBrief, fetchDemoBrief, recordReview } from "./api";
-import type { ComposeResponse, PDFBriefResponse, ReviewResponse, TeamAssignment } from "./types";
+import { composeTeam, fetchDemoBriefs, recordReview } from "./api";
+import type { ComposeResponse, DemoBrief, ReviewResponse, TeamAssignment } from "./types";
 
 const FALLBACK_BRIEF = `Build a three-person delivery team for a critical-infrastructure resilience programme.
 The client needs a security-first discovery and implementation plan covering zero trust,
@@ -71,12 +71,23 @@ export default function App() {
   const [reviewNotes, setReviewNotes] = useState("");
   const [isReviewSaving, setIsReviewSaving] = useState(false);
   const reviewSaveInFlight = useRef(false);
-  const [pdfSource, setPdfSource] = useState<PDFBriefResponse | null>(null);
-  const [pdfSourceEdited, setPdfSourceEdited] = useState(false);
-  const [isExtracting, setIsExtracting] = useState(false);
+  const [demoBriefs, setDemoBriefs] = useState<DemoBrief[]>([]);
+  const [selectedDemoBrief, setSelectedDemoBrief] = useState<DemoBrief | null>(null);
+  const [briefSourceEdited, setBriefSourceEdited] = useState(false);
+  const [isBriefLibraryOpen, setIsBriefLibraryOpen] = useState(false);
+  const [briefLibraryError, setBriefLibraryError] = useState<string | null>(null);
 
   useEffect(() => {
-    void fetchDemoBrief().then(setBrief).catch(() => undefined);
+    void fetchDemoBriefs()
+      .then((briefs) => {
+        setDemoBriefs(briefs);
+        const firstBrief = briefs[0];
+        if (firstBrief) {
+          setSelectedDemoBrief(firstBrief);
+          setBrief(firstBrief.brief);
+        }
+      })
+      .catch(() => setBriefLibraryError("The synthetic brief library could not be loaded."));
   }, []);
 
   const processLabel = useMemo(() => {
@@ -112,35 +123,29 @@ export default function App() {
   }
 
   function restoreSample() {
-    setBrief(FALLBACK_BRIEF);
-    setPdfSource(null);
-    setPdfSourceEdited(false);
+    const firstBrief = demoBriefs[0];
+    setBrief(firstBrief?.brief ?? FALLBACK_BRIEF);
+    setSelectedDemoBrief(firstBrief ?? null);
+    setBriefSourceEdited(false);
+    setIsBriefLibraryOpen(false);
     setError(null);
     resetEvaluation();
   }
 
   function editBrief(nextBrief: string) {
     setBrief(nextBrief);
-    if (pdfSource) setPdfSourceEdited(true);
+    if (selectedDemoBrief) setBriefSourceEdited(true);
     setError(null);
     resetEvaluation();
   }
 
-  async function uploadPDF(file: File | undefined) {
-    if (!file) return;
-    setIsExtracting(true);
+  function chooseDemoBrief(demoBrief: DemoBrief) {
+    setBrief(demoBrief.brief);
+    setSelectedDemoBrief(demoBrief);
+    setBriefSourceEdited(false);
+    setIsBriefLibraryOpen(false);
     setError(null);
     resetEvaluation();
-    try {
-      const extracted = await extractPDFBrief(file);
-      setBrief(extracted.text);
-      setPdfSource(extracted);
-      setPdfSourceEdited(false);
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "The PDF brief could not be extracted.");
-    } finally {
-      setIsExtracting(false);
-    }
   }
 
   async function submitReview(status: "approved" | "needs_changes") {
@@ -214,43 +219,70 @@ export default function App() {
             <div className="brief-source-row">
               <div className="brief-source-copy" id="brief-source-note">
                 <span>Brief source</span>
-                <strong>{pdfSource ? pdfSource.file_name : "Manual text"}</strong>
+                <strong>{selectedDemoBrief ? selectedDemoBrief.title : "Manual text"}</strong>
                 <small>
-                  {pdfSource
-                    ? `${pdfSource.page_count} ${pdfSource.page_count === 1 ? "page" : "pages"} · ${pdfSource.character_count} extracted characters${pdfSourceEdited ? " · edited" : ""}`
-                    : "Paste a concise brief or upload a searchable PDF."}
+                  {selectedDemoBrief
+                    ? `${selectedDemoBrief.reference} · ${selectedDemoBrief.sector}${briefSourceEdited ? " · edited" : ""}`
+                    : "Paste a concise brief or choose a synthetic scenario."}
                 </small>
               </div>
-              <label className="pdf-upload-control">
-                <input
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  disabled={isExtracting || isRunning}
-                  onChange={(event) => {
-                    const input = event.currentTarget;
-                    void uploadPDF(input.files?.[0]).finally(() => { input.value = ""; });
-                  }}
-                />
-                <span>{isExtracting ? "Extracting PDF..." : "Upload PDF"}</span>
-              </label>
+              <button
+                className="brief-library-trigger"
+                type="button"
+                onClick={() => setIsBriefLibraryOpen((open) => !open)}
+                disabled={isRunning}
+                aria-expanded={isBriefLibraryOpen}
+                aria-controls="demo-brief-library"
+              >
+                {isBriefLibraryOpen ? "Close library" : "Choose demo brief"}
+              </button>
             </div>
+            {isBriefLibraryOpen && (
+              <div className="brief-library" id="demo-brief-library">
+                <div className="brief-library-heading">
+                  <span>Simulated client briefs</span>
+                  <span>{demoBriefs.length} scenarios</span>
+                </div>
+                {briefLibraryError ? (
+                  <p className="brief-library-error" role="alert">{briefLibraryError}</p>
+                ) : demoBriefs.map((demoBrief, index) => (
+                  <button
+                    type="button"
+                    className="brief-library-item"
+                    key={demoBrief.slug}
+                    onClick={() => chooseDemoBrief(demoBrief)}
+                    disabled={isRunning}
+                    aria-pressed={selectedDemoBrief?.slug === demoBrief.slug}
+                  >
+                    <span className="brief-library-index">0{index + 1}</span>
+                    <span className="brief-library-copy">
+                      <strong>{demoBrief.title}</strong>
+                      <small>{demoBrief.reference} · {demoBrief.sector}</small>
+                    </span>
+                    <span className="brief-library-state">
+                      {selectedDemoBrief?.slug === demoBrief.slug ? "Selected" : "Load brief"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
             <label htmlFor="client-brief">Engagement requirements</label>
             <textarea
               id="client-brief"
               value={brief}
               onChange={(event) => editBrief(event.target.value)}
               maxLength={1600}
-              disabled={isExtracting}
+              disabled={isRunning}
               aria-describedby="brief-source-note"
             />
             <div className="brief-meta">
               <span>{brief.length} / 1600 characters</span>
               <span>Unstructured input</span>
             </div>
-            <button className="compose-button" onClick={runComposition} disabled={isRunning || isExtracting || brief.trim().length < 40}>
+            <button className="compose-button" onClick={runComposition} disabled={isRunning || brief.trim().length < 40}>
               {isRunning ? "Composing evidence…" : "Compose delivery team"}
             </button>
-            <p className="action-note">PDF text is extracted server-side, returned here for review, and not stored by the upload endpoint.</p>
+            <p className="action-note">Meeting mode uses synthetic briefs. A greenlit workflow can accept searchable PDFs through the same validated evaluation contract.</p>
             {error && <p className="error-message" role="alert">{error}</p>}
           </section>
 

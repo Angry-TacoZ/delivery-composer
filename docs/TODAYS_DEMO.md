@@ -8,15 +8,15 @@
 
 ## What runs today
 
-The meeting build uses `DEMO_MODE=true`. FastAPI extracts searchable PDF text, applies deterministic requirement rules, filters synthetic consultants by hard constraints, ranks the remaining profiles, produces evidence-bound explanations, and retains the review for the API session.
+The meeting build uses `DEMO_MODE=true`. FastAPI serves three synthetic brief scenarios, applies deterministic requirement rules, filters synthetic consultants by hard constraints, ranks the remaining profiles, produces evidence-bound explanations, and retains the review for the API session.
 
 This is real application behavior over synthetic data. It does not call Gemini, query PostgreSQL, or claim persistent learning.
 
 ```text
-Searchable PDF or editable text
+Synthetic brief library or editable text
               |
               v
-Bounded FastAPI validation and extraction
+Typed FastAPI brief contract and validation
               |
               v
 Deterministic requirements and hard constraints
@@ -49,11 +49,11 @@ Live mode fails at startup unless both `DATABASE_URL` and `GEMINI_API_KEY` are c
 
 ## Fifteen-minute walkthrough
 
-1. Start with the critical-infrastructure PDF and point out the extracted source metadata.
+1. Open the demo brief library, choose the critical-infrastructure case, and point out its synthetic reference and sector.
 2. Compose the team and explain that clearance and availability are gates, not model suggestions.
 3. Expand one consultant to show the profile evidence behind the score.
 4. Approve or request a revision to complete Assure and Learn.
-5. Restore the sample, upload the financial-services or media PDF, and show that requirements, roles, and team order change.
+5. Reopen the library, choose the financial-services or media case, and show that requirements, roles, and team order change.
 6. Open the repository architecture and explain the explicit adapter switch to PostgreSQL, pgvector, and Gemini.
 
-Use only the synthetic PDFs in `output/pdf/`. Do not upload real client, candidate, or employee information.
+Explain that a greenlit version can expose the existing bounded PDF adapter through the same brief contract. Do not paste real client, candidate, or employee information into the meeting build.

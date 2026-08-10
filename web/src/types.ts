@@ -59,3 +59,11 @@ export interface PDFBriefResponse {
   character_count: number;
   text: string;
 }
+
+export interface DemoBrief {
+  slug: string;
+  reference: string;
+  title: string;
+  sector: string;
+  brief: string;
+}

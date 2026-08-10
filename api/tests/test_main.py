@@ -53,6 +53,23 @@ def test_health_does_not_expose_configuration() -> None:
     }
 
 
+def test_demo_brief_library_exposes_three_bounded_synthetic_cases() -> None:
+    app = create_app(Settings(demo_mode=True))
+    with TestClient(app) as client:
+        response = client.get("/api/demo-briefs")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 3
+    assert {brief["reference"] for brief in payload} == {
+        "SYN-CNI-001",
+        "SYN-FSI-002",
+        "SYN-MED-003",
+    }
+    assert all(40 <= len(brief["brief"]) <= 1600 for brief in payload)
+    assert all(set(brief) == {"slug", "reference", "title", "sector", "brief"} for brief in payload)
+
+
 def test_demo_mode_does_not_initialize_configured_live_adapters() -> None:
     service = ComposerService(
         Settings(

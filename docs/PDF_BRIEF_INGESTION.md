@@ -1,8 +1,10 @@
 # PDF client brief ingestion
 
+> **Meeting-mode update:** the current UI intentionally presents the three synthetic cases through an inline demo brief library. The bounded extraction endpoint and generated PDF fixtures remain as a tested future integration boundary; actual file selection is not exposed during today's demo.
+
 ## Purpose
 
-Let a delivery leader upload a concise client brief as a PDF, inspect the extracted text, and run that text through the same transparent evaluator used by manual entry. Provide several visibly different synthetic briefs so the meeting demo proves that requirements and recommendations respond to the input.
+Preserve a bounded route for a future delivery leader to upload a concise client brief as a PDF, inspect the extracted text, and run it through the same transparent evaluator used by manual entry. For today's meeting, expose the distinct synthetic briefs through the faster and more explicit demo library.
 
 This planning document is intentionally committed before runtime implementation and is the basis for stacked draft PR #3.
 
@@ -49,8 +51,8 @@ The deterministic preview must derive distinct titles, skills, sectors, roles, s
 
 ## Acceptance criteria
 
-- [x] A user can select a PDF from the client brief pane and see its extracted text before evaluation.
-- [x] Manual paste, restore-sample, PDF upload, and evaluation all use the same editable brief field.
+- [x] The retained API accepts a bounded searchable PDF and returns extracted text for review before evaluation.
+- [x] Manual edits, restore-sample, demo-library selection, and the retained PDF adapter all use the same bounded brief contract.
 - [x] The server enforces MIME, extension, signature, byte-size, page-count, encryption, text-presence, and text-length boundaries.
 - [x] Upload errors are specific enough to recover from but expose no stack traces, file paths, or parser internals.
 - [x] Uploaded bytes are not persisted and no PDF content is logged.

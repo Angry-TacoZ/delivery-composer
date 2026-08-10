@@ -83,3 +83,11 @@ class PDFBriefResponse(BaseModel):
     page_count: int = Field(ge=1, le=5)
     character_count: int = Field(ge=40, le=1600)
     text: str = Field(min_length=40, max_length=1600)
+
+
+class DemoBriefResponse(BaseModel):
+    slug: str = Field(pattern=r"^[a-z0-9-]+$", max_length=80)
+    reference: str = Field(pattern=r"^SYN-[A-Z]+-\d{3}$", max_length=20)
+    title: str = Field(max_length=120)
+    sector: str = Field(max_length=120)
+    brief: str = Field(min_length=40, max_length=1600)

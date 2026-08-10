@@ -28,11 +28,11 @@ The product journey mirrors [C86's IDEAL methodology](https://www.c86.tech/metho
 
 The stage strip reflects the real workflow state. In deterministic preview mode, Learn feedback is retained only for the current API process lifetime and is labeled `session`. When the live database and Gemini path are both configured, compositions and reviews are stored in PostgreSQL and labeled `postgres`. Neither path claims autonomous model training.
 
-## PDF client briefs
+## Demo brief library and PDF-ready boundary
 
-The client brief pane accepts either editable text or a searchable PDF. PDF bytes are sent to FastAPI, validated, parsed server-side, and returned to the same visible 40-1,600 character text field used by manual entry. The extraction endpoint does not persist the uploaded file or extracted text.
+Today's meeting interface opens a backend-served library of three synthetic client briefs. Selecting one loads its editable text, reference, and sector into the same evaluator used by manual entry. This keeps the walkthrough quick and repeatable without implying that real client documents are being processed.
 
-Demonstration limits are intentionally narrow: one `.pdf`, `application/pdf`, valid PDF signature, at most 2 MiB and five pages, no encryption, and searchable text only. Scanned documents require OCR before upload.
+The FastAPI service retains a bounded PDF extraction adapter for a greenlit version: one `.pdf`, `application/pdf`, valid PDF signature, at most 2 MiB and five pages, no encryption, and searchable text only. The endpoint does not persist uploaded bytes or extracted text, but it is not exposed by today's meeting UI.
 
 Three polished synthetic briefs are available under [`output/pdf/`](output/pdf/README.md):
 
@@ -70,7 +70,8 @@ FastAPI on Cloud Run ---- Gemini API (server-side only)
           v
 Aiven PostgreSQL + pgvector
 
-PDF upload -> FastAPI validation + pypdf extraction -> editable brief text
+Demo library -> typed FastAPI response -> editable brief text
+Future PDF -> FastAPI validation + pypdf extraction -> same brief contract
 ```
 
 `DEMO_MODE=true` is an enforced execution boundary: PostgreSQL and Gemini adapters are not initialized even if credentials happen to exist. The live path is enabled only by setting `DEMO_MODE=false` with both server-side credentials; incomplete live configuration fails at startup instead of silently producing a hybrid result. See [`docs/TODAYS_DEMO.md`](docs/TODAYS_DEMO.md) for the meeting walkthrough and upgrade boundary.

@@ -8,14 +8,15 @@ from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import Settings, get_settings
-from .demo_data import DEMO_BRIEF
 from .domain import (
     BriefInput,
     ComposeResponse,
+    DemoBriefResponse,
     PDFBriefResponse,
     ReviewInput,
     ReviewResponse,
 )
+from .mock_briefs import MOCK_BRIEFS
 from .pdf_briefs import MAX_PDF_BYTES, PDFBriefError, extract_pdf_brief
 from .service import ComposerService
 
@@ -80,9 +81,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "demo_mode": active_settings.demo_mode,
         }
 
-    @app.get("/api/demo-brief")
-    def demo_brief() -> dict[str, str]:
-        return {"brief": DEMO_BRIEF}
+    @app.get("/api/demo-briefs", response_model=list[DemoBriefResponse])
+    def demo_briefs() -> list[DemoBriefResponse]:
+        return [DemoBriefResponse.model_validate(brief) for brief in MOCK_BRIEFS]
 
     @app.post("/api/extract-brief", response_model=PDFBriefResponse)
     def extract_brief(

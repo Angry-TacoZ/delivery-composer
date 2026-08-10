@@ -78,15 +78,21 @@ h1 em { color: #d7d5d2; font-family: Georgia, "Times New Roman", serif; font-wei
 .brief-source-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center; padding: 22px 0; border-bottom: 1px solid #505255; }
 .brief-source-copy { min-width: 0; display: grid; gap: 6px; }
 .brief-source-copy > span { color: #8f9090; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
-.brief-source-copy strong { overflow: hidden; color: #e3e2de; font-family: Georgia, "Times New Roman", serif; font-size: 16px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.brief-source-copy strong { display: -webkit-box; overflow: hidden; color: #e3e2de; font-family: Georgia, "Times New Roman", serif; font-size: 16px; font-weight: 400; line-height: 1.2; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .brief-source-copy small { color: #818280; font-size: 10px; line-height: 1.4; }
-.pdf-upload-control { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 16px; border: 1px solid rgba(255,255,255,.42); color: #d9d8d4; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; transition: border-color .2s, background-color .2s; }
-.pdf-upload-control:hover { border-color: #eef0ed; background: rgba(255,255,255,.035); }
-.pdf-upload-control:focus-within { outline: 2px solid #8fd1d9; outline-offset: 3px; }
-.pdf-upload-control input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
-.pdf-upload-control:has(input:disabled) { cursor: not-allowed; opacity: .48; }
+.brief-library-trigger { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 16px; border: 1px solid rgba(255,255,255,.42); color: #d9d8d4; background: transparent; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; transition: border-color .2s, background-color .2s; }
+.brief-library-trigger:hover:not(:disabled) { border-color: #eef0ed; background: rgba(255,255,255,.035); }
+.brief-library { border-bottom: 1px solid #505255; animation: reveal .24s ease-out both; }
+.brief-library-heading { display: flex; justify-content: space-between; gap: 20px; padding: 14px 0 9px; color: #777977; font-size: 8px; letter-spacing: .1em; text-transform: uppercase; }
+.brief-library-item { width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 0; border: 0; border-top: 1px solid rgba(255,255,255,.13); color: #d9d8d4; background: transparent; text-align: left; }
+.brief-library-item:hover:not(:disabled), .brief-library-item[aria-pressed="true"] { background: rgba(255,255,255,.035); }
+.brief-library-index { color: #777977; font-family: Georgia, "Times New Roman", serif; font-size: 13px; }
+.brief-library-copy { min-width: 0; display: grid; gap: 4px; }
+.brief-library-copy strong { color: #e3e2de; font-family: Georgia, "Times New Roman", serif; font-size: 14px; font-weight: 400; }
+.brief-library-copy small { overflow: hidden; color: #7f817f; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.brief-library-state { color: #8fd1d9; font-size: 8px; letter-spacing: .08em; text-transform: uppercase; }
+.brief-library-error { margin: 0; padding: 14px 0; border-top: 1px solid rgba(255,255,255,.13); color: #ef9d8d; font-size: 11px; }
 .brief-pane label { display: block; margin-top: 32px; color: #8f9090; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
-.brief-pane .pdf-upload-control { display: inline-flex; margin-top: 0; color: #d9d8d4; }
 textarea { display: block; width: 100%; min-height: 330px; resize: vertical; margin-top: 10px; padding: 20px 0; border: 0; border-top: 1px solid #505255; border-bottom: 1px solid #505255; outline: none; color: #e8e6e1; background: transparent; font-family: Georgia, "Times New Roman", serif; font-size: 18px; line-height: 1.55; }
 textarea:focus { border-color: #8fd1d9; }
 .brief-meta { display: flex; justify-content: space-between; gap: 20px; padding-top: 11px; color: #818280; font-size: 10px; letter-spacing: .03em; }
@@ -184,7 +190,9 @@ textarea:focus { border-color: #8fd1d9; }
   .section-intro { gap: 35px; padding-block: 62px 50px; }
   .brief-pane, .recommendation-pane { padding-inline: 20px; }
   .brief-source-row { grid-template-columns: 1fr; gap: 16px; }
-  .pdf-upload-control { width: 100%; }
+  .brief-library-trigger { width: 100%; }
+  .brief-library-item { grid-template-columns: 28px minmax(0, 1fr); }
+  .brief-library-state { grid-column: 2; }
   .assignment-trigger { grid-template-columns: 28px minmax(0,1fr) 78px; }
   .assignment-trigger .verified, .assignment-trigger .exception { display: none; }
   .expand-label { grid-column: 2 / -1; }

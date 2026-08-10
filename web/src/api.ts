@@ -1,12 +1,11 @@
-import type { ComposeResponse, PDFBriefResponse, ReviewResponse } from "./types";
+import type { ComposeResponse, DemoBrief, PDFBriefResponse, ReviewResponse } from "./types";
 
 const API_BASE = "/api";
 
-export async function fetchDemoBrief(): Promise<string> {
-  const response = await fetch(`${API_BASE}/demo-brief`);
-  if (!response.ok) throw new Error("The demo brief could not be loaded.");
-  const data = (await response.json()) as { brief: string };
-  return data.brief;
+export async function fetchDemoBriefs(): Promise<DemoBrief[]> {
+  const response = await fetch(`${API_BASE}/demo-briefs`);
+  if (!response.ok) throw new Error("The demo brief library could not be loaded.");
+  return (await response.json()) as DemoBrief[];
 }
 
 export async function composeTeam(rawBrief: string): Promise<ComposeResponse> {

@@ -14,6 +14,7 @@ from .domain import (
     ConstraintCheck,
     Consultant,
     ReviewInput,
+    ScoreComponent,
     TeamAssignment,
 )
 
@@ -47,10 +48,48 @@ def _constraint_checks(consultant: Consultant, requirements: BriefRequirements) 
     ]
 
 
-def _candidate_score(consultant: Consultant, requirements: BriefRequirements) -> float:
-    skill_overlap = len(set(consultant.skills).intersection(requirements.required_skills))
-    sector_overlap = len(set(consultant.sectors).intersection(requirements.preferred_sectors))
-    return round(min(0.58 + (skill_overlap * 0.08) + (sector_overlap * 0.05), 0.97), 2)
+def _deterministic_score(
+    consultant: Consultant,
+    requirements: BriefRequirements,
+) -> tuple[float, list[ScoreComponent]]:
+    skill_overlap = sorted(set(consultant.skills).intersection(requirements.required_skills))
+    sector_overlap = sorted(set(consultant.sectors).intersection(requirements.preferred_sectors))
+    components = [
+        ScoreComponent(
+            label="Exact role baseline",
+            points=58,
+            evidence=f"Profile role matches {consultant.role}.",
+        ),
+        ScoreComponent(
+            label="Required capabilities",
+            points=len(skill_overlap) * 8,
+            evidence=(
+                f"{', '.join(skill_overlap)} matched at 8 points each."
+                if skill_overlap
+                else "No required capability matches recorded."
+            ),
+        ),
+        ScoreComponent(
+            label="Preferred sectors",
+            points=len(sector_overlap) * 5,
+            evidence=(
+                f"{', '.join(sector_overlap)} matched at 5 points each."
+                if sector_overlap
+                else "No preferred sector matches recorded."
+            ),
+        ),
+    ]
+    raw_points = sum(component.points for component in components)
+    if raw_points > 97:
+        components.append(
+            ScoreComponent(
+                label="Score cap",
+                points=97 - raw_points,
+                evidence="The deterministic alignment score is capped at 97 points.",
+            )
+        )
+    total_points = sum(component.points for component in components)
+    return total_points / 100, components
 
 
 def _candidate_option(
@@ -58,13 +97,24 @@ def _candidate_option(
     requirements: BriefRequirements,
     semantic_score: float | None = None,
 ) -> CandidateOption:
+    if semantic_score is None:
+        final_score, score_breakdown = _deterministic_score(consultant, requirements)
+        score_method = "deterministic_rubric"
+    else:
+        final_score = min(1.0, max(0.0, semantic_score))
+        score_method = "pgvector_similarity"
+        score_breakdown = [
+            ScoreComponent(
+                label="pgvector similarity",
+                points=round(final_score * 100),
+                evidence="Cosine similarity from the stored profile embedding; not decomposed into narrative evidence points.",
+            )
+        ]
     return CandidateOption(
         consultant=consultant,
-        semantic_score=(
-            min(1.0, max(0.0, semantic_score))
-            if semantic_score is not None
-            else _candidate_score(consultant, requirements)
-        ),
+        semantic_score=final_score,
+        score_method=score_method,
+        score_breakdown=score_breakdown,
         hard_constraints=_constraint_checks(consultant, requirements),
         explanation=(
             f"{consultant.name} brings role-specific evidence for this option; the recorded "

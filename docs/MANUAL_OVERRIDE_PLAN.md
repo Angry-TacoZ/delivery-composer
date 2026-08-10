@@ -7,8 +7,8 @@ Expand the synthetic roster from five to fifteen profiles: three candidates for 
 ## Product direction
 
 - **Visual thesis:** extend the graphite operations workbench with a compact comparison ledger, not candidate cards or recruitment UI.
-- **Content plan:** recommended consultant first, three role-specific options second, visible trade-offs third, explicit human decision last.
-- **Interaction thesis:** opening a person reveals the two runners-up and their scores in place; choosing Compare opens a focused current-versus-challenger overlay with RPG-style stat deltas; an override updates the selected team and leaves a visible decision marker.
+- **Content plan:** recommended consultant first, three role-specific options second, auditable score arithmetic and trade-offs third, explicit human decision last.
+- **Interaction thesis:** opening a person reveals the two runners-up and their scores in place; choosing Compare opens a focused current-versus-challenger overlay with RPG-style stat deltas and attributable point rows; an override updates the selected team and leaves a visible decision marker.
 
 ## Synthetic roster
 
@@ -30,10 +30,13 @@ Every profile remains fictional and includes verified-style evidence plus explic
 4. A human may compare the current assignment with either runner-up in a focused dialog, then select another candidate, including one with a visible exception; the UI must never relabel that exception as verified.
 5. Overrides record the role, original recommendation, and selected consultant with the final review.
 6. Changing the brief or composing again clears all prior overrides.
+7. Deterministic alignment is auditable as `58 base + 8 per required-capability match + 5 per preferred-sector match`, capped at 97.
+8. Clearance and availability remain hard gates rather than score deductions; considerations remain decision context unless a real scoring rule uses them.
 
 ## Backend-ready contract
 
 - Candidate options and considerations are returned by FastAPI, not invented in the browser.
+- Every score component is computed and returned by FastAPI; the browser may not reverse-engineer or invent point attribution.
 - Demo reviews validate override identifiers against the stored composition run.
 - PostgreSQL review storage retains the same bounded override payload when the live path is enabled later.
 - Gemini remains unable to change hard-constraint results or candidate identifiers.
@@ -46,6 +49,9 @@ Every profile remains fictional and includes verified-style evidence plus explic
 - [x] Opening evidence shows both runners-up and their alignment scores.
 - [x] Compare opens an accessible current-versus-challenger dialog with score delta, evidence, considerations, and constraint states.
 - [x] A user can make or restore a manual override from the comparison dialog.
+- [x] Every displayed deterministic total equals the sum of its returned score components.
+- [x] The comparison explains the candidate delta through side-by-side attributable point rows.
+- [x] Narrative considerations and hard-gate exceptions are explicitly labeled as not scored.
 - [x] The selected assignment, summary state, and review payload reflect the override.
 - [x] Invalid or fabricated override identifiers are rejected server-side.
 - [x] Recomposition clears overrides.

@@ -155,7 +155,7 @@ textarea:focus { border-color: #8fd1d9; }
 .comparison-header span, .comparison-column-label { color: #848582; font-size: 8px; letter-spacing: .1em; text-transform: uppercase; }
 .comparison-header h3 { margin: 5px 0 0; color: #f0efec; font-family: Georgia, "Times New Roman", serif; font-size: 22px; font-weight: 400; }
 .comparison-close { padding: 6px 0; border: 0; color: #aaa9a5; background: transparent; font-size: 8px; letter-spacing: .08em; text-transform: uppercase; }
-.comparison-scoreboard { display: grid; grid-template-columns: 1fr 128px 1fr; align-items: stretch; border-bottom: 1px solid #4c4e51; }
+.comparison-scoreboard { display: grid; grid-template-columns: 1fr 150px 1fr; align-items: stretch; border-bottom: 1px solid #4c4e51; }
 .comparison-scoreboard > div { display: grid; grid-template-columns: 1fr auto; gap: 7px 14px; align-items: end; padding: 22px 26px; }
 .comparison-scoreboard > div > span { grid-column: 1 / -1; color: #858684; font-size: 8px; letter-spacing: .08em; text-transform: uppercase; }
 .comparison-scoreboard strong { color: #eeece8; font-family: Georgia, "Times New Roman", serif; font-size: 18px; font-weight: 400; }
@@ -163,6 +163,7 @@ textarea:focus { border-color: #8fd1d9; }
 .comparison-scoreboard > div:nth-child(2) { display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid #4c4e51; border-left: 1px solid #4c4e51; text-align: center; }
 .comparison-scoreboard > div:nth-child(2) span { font-size: 7px; }
 .comparison-scoreboard > div:nth-child(2) strong { font-family: inherit; font-size: 15px; }
+.comparison-scoreboard > div:nth-child(2) small { max-width: 130px; color: #a4a5a2; font-size: 8px; line-height: 1.35; }
 .delta-positive strong { color: #8fd1d9 !important; }
 .delta-negative strong { color: #d9b895 !important; }
 .delta-neutral strong { color: #b7b8b5 !important; }
@@ -170,8 +171,19 @@ textarea:focus { border-color: #8fd1d9; }
 .comparison-columns section { min-width: 0; padding: 24px 26px 22px; }
 .comparison-columns section + section { border-left: 1px solid #4c4e51; }
 .comparison-columns h4 { margin: 5px 0 20px; color: #c7c6c2; font-size: 11px; font-weight: 400; }
+.score-audit-label { margin-top: 0; }
+.score-audit { margin: 7px 0 20px; border-top: 1px solid rgba(255,255,255,.13); }
+.score-audit > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: start; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.09); }
+.score-audit > div > span { min-width: 0; display: grid; gap: 3px; }
+.score-audit strong { color: #d2d1cd; font-size: 9px; font-weight: 400; }
+.score-audit small { color: #858684; font-size: 8px; line-height: 1.35; }
+.score-audit b { color: #8fd1d9; font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.score-audit .score-audit-total { align-items: center; color: #edebe7; }
+.score-audit-total span { font-size: 8px; letter-spacing: .08em; text-transform: uppercase; }
+.score-audit-total b { color: #edebe7; font-size: 15px; }
 .comparison-columns ul { min-height: 58px; display: grid; gap: 7px; margin: 7px 0 18px; padding-left: 16px; color: #aebfbd; font-size: 10px; line-height: 1.4; }
 .comparison-columns .comparison-considerations { color: #b9a493; }
+.constraint-audit-label { margin-top: 20px; }
 .comparison-columns dl { display: grid; gap: 0; margin: 5px 0 0; border-top: 1px solid rgba(255,255,255,.13); }
 .comparison-columns dl div { display: flex; justify-content: space-between; gap: 20px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.09); }
 .comparison-columns dt, .comparison-columns dd { margin: 0; font-size: 8px; letter-spacing: .06em; text-transform: uppercase; }

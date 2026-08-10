@@ -42,6 +42,14 @@ function ComparisonDialog({
   const scoreDelta = Math.round((challenger.semantic_score - current.semantic_score) * 100);
   const challengerPasses = challenger.hard_constraints.every((check) => check.passed);
   const restoresRecommendation = challenger.consultant.id === recommendationId;
+  const currentPoints = new Map(current.score_breakdown.map((component) => [component.label, component.points]));
+  const challengerPoints = new Map(challenger.score_breakdown.map((component) => [component.label, component.points]));
+  const deltaDrivers = Array.from(new Set([...currentPoints.keys(), ...challengerPoints.keys()]))
+    .map((label) => ({
+      label,
+      points: (challengerPoints.get(label) ?? 0) - (currentPoints.get(label) ?? 0),
+    }))
+    .filter((component) => component.points !== 0);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -91,6 +99,11 @@ function ComparisonDialog({
           <div className={scoreDelta > 0 ? "delta-positive" : scoreDelta < 0 ? "delta-negative" : "delta-neutral"}>
             <span>Alignment delta</span>
             <strong>{scoreDelta > 0 ? "+" : ""}{scoreDelta} pts</strong>
+            <small>
+              {deltaDrivers.length > 0
+                ? deltaDrivers.map((driver) => `${driver.label} ${driver.points > 0 ? "+" : ""}${driver.points}`).join(" · ")
+                : "No scoring-component difference"}
+            </small>
           </div>
           <div>
             <span>Challenger</span>
@@ -104,15 +117,34 @@ function ComparisonDialog({
             <section key={label}>
               <span className="comparison-column-label">{label}</span>
               <h4>{option.consultant.seniority}</h4>
+              <span className="evidence-label score-audit-label">
+                Score arithmetic · {option.score_method === "deterministic_rubric" ? "deterministic rubric" : "pgvector similarity"}
+              </span>
+              <div className="score-audit">
+                {option.score_breakdown.map((component) => (
+                  <div key={component.label}>
+                    <span>
+                      <strong>{component.label}</strong>
+                      <small>{component.evidence}</small>
+                    </span>
+                    <b>{component.points > 0 ? "+" : ""}{component.points}</b>
+                  </div>
+                ))}
+                <div className="score-audit-total">
+                  <span>Total alignment</span>
+                  <b>{Math.round(option.semantic_score * 100)}</b>
+                </div>
+              </div>
               <span className="evidence-label">Positive evidence</span>
               <ul>
                 {option.consultant.evidence.map((item) => <li key={item}>{item}</li>)}
               </ul>
-              <span className="evidence-label consideration-label">Considerations</span>
+              <span className="evidence-label consideration-label">Considerations · not scored</span>
               <ul className="comparison-considerations">
                 {option.consultant.considerations.map((item) => <li key={item}>{item}</li>)}
               </ul>
-              <dl>
+              <span className="evidence-label constraint-audit-label">Eligibility gates · not scored</span>
+              <dl className="comparison-constraints">
                 {option.hard_constraints.map((check) => (
                   <div key={check.label}>
                     <dt>{check.label}</dt>

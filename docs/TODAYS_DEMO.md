@@ -52,7 +52,7 @@ Live mode fails at startup unless both `DATABASE_URL` and `GEMINI_API_KEY` are c
 1. Open the demo brief library, choose the critical-infrastructure case, and point out its synthetic reference and sector.
 2. Compose the team and explain that clearance and availability are gates, not model suggestions.
 3. Open Theo's evidence to reveal Priya and Marcus as scored runners-up, then select Priya's Compare control.
-4. Use the RPG-style current-versus-challenger overlay to show that Priya has the stronger semantic score, but Theo is recommended because Priya misses the SC clearance and target-date gates. Select Priya with the visible exception and point out that the failed constraints remain red instead of being rewritten as a pass.
+4. Use the RPG-style current-versus-challenger overlay to audit `Theo: 58 + 8 + 0 = 66` against `Priya: 58 + 16 + 0 = 74`. The delta names Priya's extra required-capability match immediately. Then show that Theo is still recommended because clearance and availability are unscored hard gates; select Priya with the visible exception and point out that the failed constraints remain red instead of being rewritten as a pass.
 5. Add a short review note and approve. The Learn state confirms that one human override was stored for the API session.
 6. Restore the sample or select another brief to show that the override clears and the evaluation changes with the input.
 7. Open the repository architecture and explain the explicit adapter switch to PostgreSQL, pgvector, and Gemini.

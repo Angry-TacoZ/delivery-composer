@@ -199,6 +199,11 @@ def test_mock_briefs_produce_distinct_requirements_and_teams() -> None:
             option["consultant"]["role"] == assignment["role_on_team"]
             for option in assignment["alternatives"]
         )
+        and all(
+            sum(component["points"] for component in option["score_breakdown"])
+            == round(option["semantic_score"] * 100)
+            for option in assignment["alternatives"]
+        )
         and all(check["passed"] for check in assignment["hard_constraints"][:2])
         for composition in compositions
         for assignment in composition["assignments"]
@@ -209,6 +214,38 @@ def test_mock_briefs_produce_distinct_requirements_and_teams() -> None:
         if composition["requirements"]["title"] == "Media and broadcast platform recovery team"
     )
     assert "ai engineering" not in media_requirements["required_skills"]
+
+
+def test_deterministic_score_breakdown_explains_the_delivery_lead_delta() -> None:
+    app = create_app(Settings(demo_mode=True))
+    with TestClient(app) as client:
+        composition = client.post(
+            "/api/compose",
+            json={"raw_brief": MOCK_BRIEFS[0]["brief"]},
+        ).json()
+
+    delivery_options = {
+        option["consultant"]["name"]: option
+        for option in composition["assignments"][0]["alternatives"]
+    }
+    theo = delivery_options["Theo Morgan"]
+    priya = delivery_options["Priya Shah"]
+    theo_components = {item["label"]: item["points"] for item in theo["score_breakdown"]}
+    priya_components = {item["label"]: item["points"] for item in priya["score_breakdown"]}
+
+    assert theo["score_method"] == "deterministic_rubric"
+    assert priya["score_method"] == "deterministic_rubric"
+    assert theo_components == {
+        "Exact role baseline": 58,
+        "Required capabilities": 8,
+        "Preferred sectors": 0,
+    }
+    assert priya_components == {
+        "Exact role baseline": 58,
+        "Required capabilities": 16,
+        "Preferred sectors": 0,
+    }
+    assert round((priya["semantic_score"] - theo["semantic_score"]) * 100) == 8
 
 
 def test_compose_returns_evidence_and_human_review_boundary() -> None:

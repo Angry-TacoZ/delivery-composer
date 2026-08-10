@@ -50,9 +50,17 @@ class ConstraintCheck(BaseModel):
     evidence: str
 
 
+class ScoreComponent(BaseModel):
+    label: str = Field(max_length=80)
+    points: int = Field(ge=-100, le=100)
+    evidence: str = Field(max_length=240)
+
+
 class CandidateOption(BaseModel):
     consultant: Consultant
     semantic_score: float = Field(ge=0, le=1)
+    score_method: Literal["deterministic_rubric", "pgvector_similarity"]
+    score_breakdown: list[ScoreComponent] = Field(min_length=1, max_length=5)
     hard_constraints: list[ConstraintCheck]
     explanation: str
 

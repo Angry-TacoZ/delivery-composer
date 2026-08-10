@@ -33,6 +33,12 @@ export interface Consultant {
 export interface CandidateOption {
   consultant: Consultant;
   semantic_score: number;
+  score_method: "deterministic_rubric" | "pgvector_similarity";
+  score_breakdown: Array<{
+    label: string;
+    points: number;
+    evidence: string;
+  }>;
   hard_constraints: ConstraintCheck[];
   explanation: string;
 }

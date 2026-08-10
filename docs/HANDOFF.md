@@ -27,6 +27,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - The synthetic roster contains three exact-role candidates for each of five role families. Hard-gate-eligible recommendations are presented first, while all alternatives retain visible positive evidence and considerations.
 - Human overrides are advisory decisions, not constraint rewrites: clearance and availability exceptions remain visible, and review identifiers are validated against the stored composition run.
 - Opening an assignment reveals both scored runners-up. Each runner opens a native current-versus-challenger comparison dialog with RPG-style score deltas, evidence, concerns, constraints, and the override action.
+- Deterministic comparison scores are server-attributed as a 58-point exact-role baseline, 8 points per required-capability match, and 5 points per preferred-sector match. Narrative considerations and eligibility gates are explicitly not scored.
 
 # Changed files
 
@@ -52,6 +53,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - `docs/MANUAL_OVERRIDE_PLAN.md`: planning-first comparison, decision-rule, and verification contract for PR #4.
 - `api/app/demo_data.py`, `api/app/domain.py`, `api/app/repository.py`, `api/app/migrations.py`, and `api/app/seed.py`: fifteen fictional profiles, three-option assignments, validated override payloads, and PostgreSQL-ready persistence.
 - `web/src/App.tsx`, `web/src/api.ts`, `web/src/types.ts`, and `web/src/styles.css`: scored runners-up, accessible comparison dialog, visible exception selection, override provenance, and review submission.
+- `api/app/domain.py` and `api/app/repository.py`: typed score components and auditable deterministic arithmetic returned with every candidate option.
 
 # Verification
 
@@ -62,7 +64,7 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Responsive check: 390 × 844 viewport passed with no unintended horizontal overflow.
 - Browser console: no warnings or errors during desktop or mobile primary workflow.
 - Ruff: pass.
-- Pytest: 19 passed; two dependency deprecation warnings on local Python 3.14.
+- Pytest: 20 passed; two dependency deprecation warnings on local Python 3.14.
 - Frontend TypeScript/Vite production build: pass.
 - npm production dependency audit: 0 vulnerabilities.
 - Predeploy secret/API exposure scan: pass.
@@ -78,9 +80,10 @@ The local MVP is implemented and fully verified in deterministic preview mode. F
 - Demo-library browser check: three synthetic cases were visible with references and sectors; financial-services selection changed the brief, requirements, roles, scores, and ordered team without layout clipping at the inspected desktop viewport.
 - Manual-override browser check: critical-infrastructure composition returned three Delivery Lead options; the higher-scoring ineligible candidate remained labeled with clearance and date exceptions, selection produced a visible human-override state, and approval confirmed one stored override.
 - Override-reset browser check: restoring the sample and recomposing removed the human-override state.
-- PR #4 canonical verifier: Ruff, 19 API tests, frontend production build, and predeploy secret/API exposure scan all passed on 2026-08-10.
+- PR #4 canonical verifier: Ruff, 20 API tests, frontend production build, and predeploy secret/API exposure scan all passed on 2026-08-10.
 - GitHub Actions on draft PR #4: API lint/tests and web production build pass.
 - Comparison-dialog browser check: opening evidence exposed both scored runners-up; Priya opened against Theo with a `+8 pts` delta and two visible hard-constraint exceptions; Escape closed the dialog; selecting the challenger created the human-override state.
+- Score-audit browser check: the `+8 pts` delta names required capabilities as its driver; Theo renders `58 + 8 + 0 = 66`, Priya renders `58 + 16 + 0 = 74`, and considerations plus eligibility gates are labeled not scored.
 
 # Next task
 

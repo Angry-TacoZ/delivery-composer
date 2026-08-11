@@ -1,10 +1,10 @@
 # PDF client brief ingestion
 
-> **Meeting-mode update:** the current UI intentionally presents the three synthetic cases through an inline demo brief library. The bounded extraction endpoint and generated PDF fixtures remain as a tested future integration boundary; actual file selection is not exposed during today's demo.
+> **Portfolio-mode update:** the current UI presents three synthetic cases through an inline demo brief library. The bounded extraction endpoint and generated PDF fixtures remain a tested future integration boundary; actual file selection is not exposed in the public demo.
 
 ## Purpose
 
-Preserve a bounded route for a future delivery leader to upload a concise client brief as a PDF, inspect the extracted text, and run it through the same transparent evaluator used by manual entry. For today's meeting, expose the distinct synthetic briefs through the faster and more explicit demo library.
+Preserve a bounded route for a future delivery leader to upload a concise client brief as a PDF, inspect the extracted text, and run it through the same transparent evaluator used by manual entry. The public portfolio interface uses distinct synthetic briefs through the faster and more explicit demo library.
 
 This planning document is intentionally committed before runtime implementation and is the basis for stacked draft PR #3.
 
@@ -39,7 +39,7 @@ Create polished, one-page, synthetic PDFs under `output/pdf/`:
 2. Financial services AI governance - baseline clearance, governed data, AI engineering, and regulatory delivery.
 3. Media and broadcast platform recovery - baseline clearance, platform engineering, cloud automation, incident response, and a later start date.
 
-The deterministic preview must derive distinct titles, skills, sectors, roles, start dates, summaries, and team compositions from these briefs. This keeps the offline meeting path honest without making a paid model call.
+The deterministic preview must derive distinct titles, skills, sectors, roles, start dates, summaries, and team compositions from these briefs. This keeps the public demo honest without making a paid model call.
 
 ## Product design
 

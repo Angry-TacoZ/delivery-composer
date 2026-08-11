@@ -23,7 +23,7 @@ Firebase Hosting serves `web/dist`, routes `/api/**` to Cloud Run, and routes re
 1. PR containing the deployment state is reviewed, merged, and passing on `main`.
 2. Blaze billing is active for `composermvp-4d5c0`.
 3. A low Cloud Billing budget alert is configured and verified. An alert is not a hard spending cap.
-4. Google Cloud CLI and Firebase CLI access are authenticated to James's account.
+4. Google Cloud CLI and Firebase CLI are authenticated to an account authorized for the target project.
 5. Local `main` is clean and exactly matches `origin/main`.
 
 ## Authentication checks

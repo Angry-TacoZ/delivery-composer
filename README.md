@@ -1,81 +1,54 @@
 # Delivery Composer
 
-An evidence-backed staffing MVP for consulting delivery teams. Delivery Composer turns an unstructured client brief into validated requirements, applies non-negotiable constraints, retrieves relevant experience, and leaves the final decision with a human delivery leader.
+Delivery Composer is a public, synthetic-data portfolio application for assembling consulting delivery teams from unstructured client briefs. It combines transparent constraints, auditable scoring, candidate comparison, and human approval in one governed workflow.
 
-![Delivery Composer C86-aligned interface](docs/screenshots/delivery-composer-hero.png)
+![Delivery Composer interface](docs/screenshots/delivery-composer-hero.png)
 
-## Why this exists
+## The problem
 
-Consultancies often know the experience they need but cannot consistently turn a brief into a defensible team recommendation. This MVP demonstrates a safer division of labor:
+Consultancies often know the experience an engagement needs but struggle to turn a brief into a consistent, defensible team recommendation. Delivery Composer demonstrates a safer division of labor:
 
-1. AI structures ambiguous requirements.
-2. PostgreSQL enforces hard constraints.
-3. pgvector ranks semantically relevant experience.
-4. The interface exposes evidence and exceptions.
-5. A person approves or revises the recommendation.
+1. Structure an ambiguous brief into explicit requirements.
+2. Apply non-negotiable clearance and availability constraints.
+3. Rank relevant experience with attributable scoring.
+4. Expose supporting evidence, trade-offs, and exceptions.
+5. Keep approval and revision with a human delivery leader.
 
-> **Rules first. Semantic retrieval second. Human decision always.**
+> **Constraints first. Evidence second. Human decision always.**
 
-## IDEAL methodology alignment
+## Delivery workflow
 
-The product journey mirrors [C86's IDEAL methodology](https://www.c86.tech/methodology) while keeping the existing operations-tool interface:
+The interface uses a five-stage delivery-assurance cycle:
 
-1. **Identify** captures the client environment, stakeholders, intended outcome, and highest-impact need.
-2. **Define** turns that opportunity into roles, skills, clearance, and a delivery path.
-3. **Execute** composes an eligible team using deterministic rules or the configured PostgreSQL/pgvector path.
-4. **Assure** exposes constraint checks and evidence for a human delivery leader to validate.
-5. **Learn** records the decision and optional reviewer notes for later refinement.
+1. **Identify** captures the environment, outcome, and highest-impact need.
+2. **Define** converts that need into roles, capabilities, clearance, and timing.
+3. **Execute** composes an eligible team using deterministic rules or configured live adapters.
+4. **Assure** exposes constraints and evidence for human review.
+5. **Learn** records the decision and actionable revision feedback.
 
-The stage strip reflects the real workflow state. In deterministic preview mode, Learn feedback is retained only for the current API process lifetime and is labeled `session`. When the live database and Gemini path are both configured, compositions and reviews are stored in PostgreSQL and labeled `postgres`. Neither path claims autonomous model training.
+The stage strip represents real application state. In portfolio mode, feedback is retained only for the current API process and is labeled as temporary. The planned live path stores compositions and reviews in PostgreSQL. Neither path claims autonomous model training.
 
-## Demo brief library and PDF-ready boundary
+## What the public demo proves
 
-Today's meeting interface opens a backend-served library of three synthetic client briefs. Selecting one loads its editable text, reference, and sector into the same evaluator used by manual entry. This keeps the walkthrough quick and repeatable without implying that real client documents are being processed.
+- Three synthetic briefs produce different requirements, roles, scores, and team compositions.
+- Fifteen fictional profiles provide three candidates for each supported role family.
+- Every score is attributable: `58` points for exact-role fit, `8` per required-capability match, and `5` per preferred-sector match, capped at `97`.
+- Clearance and availability remain eligibility gates rather than hidden score adjustments.
+- A reviewer can compare candidates, select a visible exception, approve the team, or request a revision.
+- Revision feedback creates a linked re-evaluation with an inspectable before-and-after delta.
+- The browser receives no database credential or model-provider key.
 
-The FastAPI service retains a bounded PDF extraction adapter for a greenlit version: one `.pdf`, `application/pdf`, valid PDF signature, at most 2 MiB and five pages, no encryption, and searchable text only. The endpoint does not persist uploaded bytes or extracted text, but it is not exposed by today's meeting UI.
-
-Three polished synthetic briefs are available under [`output/pdf/`](output/pdf/README.md):
-
-- Critical infrastructure cyber resilience -> Theo Morgan, Maya Patel, Amina Okafor.
-- Financial services AI governance -> Theo Morgan, Amina Okafor, Elena Rossi.
-- Media and broadcast platform recovery -> Theo Morgan, Jon Bell, Elena Rossi.
-
-These cases produce different titles, skills, sectors, target dates, roles, summaries, and ordered teams in deterministic preview mode. Regenerate the PDFs with `scripts/generate_mock_briefs.py`.
-
-## Candidate comparison and human override
-
-The synthetic roster contains fifteen fictional profiles: three exact-role candidates for each of the five role families used across the demo. Opening a recommendation shows both runners-up and their alignment scores. Selecting either runner-up opens a focused current-versus-challenger comparison with the score delta, server-computed scoring arithmetic, positive evidence, considerations, clearance, and availability arranged like an RPG equipment comparison while retaining the restrained C86 visual system.
-
-Deterministic meeting scores are fully attributable: `58` points for exact role fit, `8` per required-capability match, and `5` per preferred-sector match, capped at `97`. The comparison names the component responsible for every delta and proves that the displayed total equals the returned components. Narrative considerations, clearance, and availability are explicitly labeled as not scored; the latter two remain eligibility gates that can outrank a higher alignment score.
-
-The service recommends only a candidate who passes the hard gates. A delivery leader can still select another candidate, including one with a clearly labeled exception, to demonstrate the real governance boundary. That override is validated against the composition run and carried into the final review record; recomposing or changing the brief clears it.
-
-## Actionable review and revision
-
-Approval and revision are real API decisions rather than decorative buttons. Approval exposes working actions to change the decision or begin another evaluation. A revision request requires actionable feedback, records that review, and exposes `Re-evaluate with feedback`. The new composition is linked to its reviewed parent run, applies the bounded feedback, and keeps an interactive prior-versus-current role and team delta in the interface.
-
-In deterministic meeting mode, explicit instructions such as `Replace the Data & AI Engineer with a Cloud Engineer` materially change the requested role set without making a paid model call. The live adapter supplies the same bounded revision context to Gemini and pgvector while keeping credentials server-side.
-
-## What the demo proves
-
-- A realistic client brief can be converted into a three-person delivery recommendation.
-- Every proposed consultant is accompanied by the evidence and hard-constraint checks used to support the match.
-- Every requested role exposes three distinct candidates with visible positives and trade-offs.
-- A human can override the recommendation without hiding a failed constraint, and that decision is captured in the review.
-- A revision request produces a linked re-evaluation and an inspectable prior-result delta instead of a terminal disabled state.
-- AI-generated reasoning is advisory and cannot bypass clearance or availability rules.
-- The same interface supports a deterministic, no-cost preview and the configured PostgreSQL/pgvector + Gemini path.
-- The public-facing concept uses synthetic people and engagement data only.
+The demo library is intentionally synthetic and editable. A bounded PDF extraction adapter is implemented and tested, but file upload is not exposed in the public interface.
 
 ## Architecture
 
-Today's meeting build deliberately runs the no-cost deterministic path:
+The hosted portfolio build uses the deterministic path:
 
 ```text
-React -> FastAPI -> deterministic requirements and ranking -> API-session review storage
+React -> FastAPI -> deterministic requirements and scoring -> temporary review storage
 ```
 
-The same FastAPI service owns the planned live adapters:
+The same FastAPI boundary owns the planned live adapters:
 
 ```text
 React + Firebase Hosting
@@ -85,97 +58,61 @@ React + Firebase Hosting
 FastAPI on Cloud Run ---- Gemini API (server-side only)
           |
           v
-Aiven PostgreSQL + pgvector
-
-Demo library -> typed FastAPI response -> editable brief text
-Future PDF -> FastAPI validation + pypdf extraction -> same brief contract
+PostgreSQL + pgvector
 ```
 
-`DEMO_MODE=true` is an enforced execution boundary: PostgreSQL and Gemini adapters are not initialized even if credentials happen to exist. The live path is enabled only by setting `DEMO_MODE=false` with both server-side credentials; incomplete live configuration fails at startup instead of silently producing a hybrid result. See [`docs/TODAYS_DEMO.md`](docs/TODAYS_DEMO.md) for the meeting walkthrough and upgrade boundary.
-
-The browser never receives the Aiven connection URI or Gemini API key. FastAPI validates the brief, bounds request size, and owns all database and model-provider access.
+`DEMO_MODE=true` prevents PostgreSQL and Gemini adapters from initializing even if credentials exist. `DEMO_MODE=false` requires both server-side services and fails at startup if configuration is incomplete.
 
 ## Repository map
 
 ```text
-api/                    FastAPI service, domain logic, migration, seed, tests
-web/                    React/Vite client and C86-aligned visual system
-docs/                   Architecture handoff, visual criteria, QA evidence
-.codex/verify.json      Canonical local verification contract
-.github/workflows/      Pull-request and main-branch CI
-firebase.json           Hosting and Cloud Run rewrite configuration
+api/                    FastAPI service, domain logic, adapters, and tests
+web/                    React/Vite operations interface
+docs/                   Architecture, workflow, QA, and deployment documentation
+output/pdf/             Synthetic brief fixtures
+scripts/                Reproducible verification, deployment, and fixture tools
+.github/workflows/      Pull-request and main-branch verification
 ```
 
 ## Run locally
 
-1. Create a virtual environment and install API dependencies:
-
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\python.exe -m pip install -r api\requirements.txt -r api\requirements-dev.txt
-   ```
-
-2. Install frontend dependencies:
-
-   ```powershell
-   npm.cmd --prefix web ci
-   ```
-
-3. Start the API in deterministic preview mode. This path makes no paid model calls:
-
-   ```powershell
-   .\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir api --reload --port 8000
-   ```
-
-4. Start the frontend:
-
-   ```powershell
-   npm.cmd --prefix web run dev
-   ```
-
-Open `http://127.0.0.1:5173` and run the populated sample brief.
-
-## Deploy the deterministic demo
-
-The reviewed meeting deployment uses Firebase project `composermvp-4d5c0`, Cloud Run service `delivery-composer-api` in `us-east1`, and the eventual custom domain `composer.jamesai.space`. It keeps `DEMO_MODE=true`; PostgreSQL and Gemini credentials are neither required nor configured.
-
-After the deployment PR is merged, Blaze billing is active, a budget alert is verified, and both CLIs are authenticated, deploy from a clean `main` branch:
-
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\deploy-demo.ps1 -BudgetAlertConfirmed
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r api\requirements.txt -r api\requirements-dev.txt
+npm.cmd --prefix web ci
 ```
 
-The script runs the canonical verifier, deploys Cloud Run with zero minimum and one maximum instance, verifies the credential-free health contract, deploys Firebase Hosting, and verifies the `/api/**` rewrite. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for preconditions, custom-domain setup, rollback, and known limitations.
-
-## Enable PostgreSQL, pgvector, and Gemini
-
-Copy `.env.example` to `.env` and add the real values locally. Never commit `.env`, a database URI, or a model API key.
-
-After `DATABASE_URL` and `GEMINI_API_KEY` are available server-side, set `DEMO_MODE=false` and run:
+Start the API and web application in separate terminals:
 
 ```powershell
-Push-Location api
-..\.venv\Scripts\python.exe -m app.migrations
-..\.venv\Scripts\python.exe -m app.seed
-Pop-Location
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir api --reload --port 8000
+npm.cmd --prefix web run dev
 ```
 
-`migrations.py` enables pgvector and creates the schema. `seed.py` generates embeddings for the fifteen-profile synthetic roster.
+Open `http://127.0.0.1:5173` and choose any synthetic brief.
 
-## Verification
-
-Run the same required checks used by the repository contract:
+## Verify
 
 ```powershell
-.\.venv\Scripts\python.exe -m ruff check api
-.\.venv\Scripts\python.exe -m pytest api\tests
-npm.cmd --prefix web run build
+powershell -ExecutionPolicy Bypass -File scripts\verify.ps1
 ```
 
-The visual workflow is also checked at desktop and mobile widths for PDF extraction, composition, evidence expansion, IDEAL stage transitions, review recording, console errors, unintended overflow, and the animated trajectory field. See [`docs/design-qa.md`](docs/design-qa.md) and [`docs/pdf-qa.md`](docs/pdf-qa.md).
+The repository-owned verifier runs Ruff, the API tests, and the frontend production build. CI runs the same core checks.
 
-## Current boundary
+## Deployment
 
-This repository is a **public-low-risk demo implementation using synthetic data**, not a production staffing or hiring decision system. The deterministic hosted path requires the documented billing safeguards and deployment smoke tests. PostgreSQL and Gemini remain a separate, disabled path that still requires server-side secrets and live integration verification. Do not load real client, candidate, or employee information into this MVP.
+The current deterministic demo is hosted through Firebase Hosting and Cloud Run. The deployment script enforces a clean, synchronized `main`, confirms budget-alert acknowledgement, caps Cloud Run at one instance, and verifies the deterministic health response. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-The interface is a tailored concept for a C86 conversation. It is not an official C86 product and does not claim C86 endorsement or ownership.
+## Optional live adapters
+
+Copy `.env.example` to an uncommitted `.env`, provide `DATABASE_URL` and `GEMINI_API_KEY` server-side, and set `DEMO_MODE=false`. The migration enables pgvector and creates the schema; the seed command creates embeddings for the fictional roster.
+
+The live PostgreSQL/pgvector and Gemini path is an architectural extension point, not a verified capability of the public hosted demo.
+
+## Safety boundary
+
+This repository is a public, low-risk demonstration using fictional people and synthetic engagement data. It is not a production staffing or hiring system. Do not submit real client, employee, consultant, candidate, regulated, or confidential information.
+
+## License
+
+Released under the [MIT License](LICENSE).

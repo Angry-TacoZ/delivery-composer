@@ -28,7 +28,7 @@ The media comparison exposed a false-positive `ai` substring match inside unrela
 - Mobile: source row and upload control stack to 335 pixels inside a 390 x 844 viewport; document-level scroll width remained 375 pixels.
 - Invalid file: a `.pdf` with no PDF signature returned a recoverable validation message and no stale evaluation remained visible.
 - Console: no warnings or errors during the primary PDF workflow.
-- Screenshot: `docs/screenshots/delivery-composer-pdf-evaluation.png`.
+- The earlier upload-interface screenshot is intentionally excluded because file selection is not exposed in the current public portfolio workflow.
 
 ## Final result
 

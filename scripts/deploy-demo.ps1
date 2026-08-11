@@ -71,8 +71,8 @@ try {
     }
 
     $env:PYTHONUTF8 = "1"
-    & "C:\Users\angry\.codex\sessions\scripts\verify-project.cmd" --project $repoRoot
-    Assert-LastExitCode "Canonical verification"
+    & (Join-Path $repoRoot "scripts\verify.ps1")
+    Assert-LastExitCode "Repository verification"
 
     & $gcloudCommand config set project $ProjectId --quiet
     Assert-LastExitCode "Google Cloud project selection"

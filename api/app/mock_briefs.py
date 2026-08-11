@@ -12,7 +12,7 @@ MOCK_BRIEFS = [
             "Required roles are delivery leadership, security architecture, and data and AI "
             "engineering. All consultants must hold SC clearance and be available by "
             "2026-09-07. The client expects a practical discovery followed by implementation, "
-            "clear accountability, and verified profile evidence."
+            "clear accountability, and documented profile evidence."
         ),
     },
     {
@@ -27,7 +27,7 @@ MOCK_BRIEFS = [
             "governance across risk, compliance, and technology. Required roles are delivery "
             "leadership, data and AI engineering, and security consulting. Baseline clearance "
             "is sufficient and consultants must be available by 2026-09-14. Recommendations "
-            "must use verified experience and preserve a human approval decision."
+            "must use documented experience and preserve a human approval decision."
         ),
     },
     {

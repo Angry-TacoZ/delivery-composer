@@ -82,7 +82,7 @@ class AnalysisProvider:
             "for human assurance."
         )
         fallback_explanations = [
-            f"{assignment.consultant.name} is recommended because the verified profile evidence "
+            f"{assignment.consultant.name} is recommended because the profile evidence "
             f"matches the {assignment.role_on_team} role and recorded constraints."
             for assignment in assignments
         ]
@@ -230,7 +230,7 @@ class AnalysisProvider:
             requested_roles=requested_roles,
             constraints=[
                 f"Available by {target_start.isoformat()}",
-                "Use verified profile evidence",
+                "Use documented profile evidence",
             ],
             extraction_source="deterministic_demo",
         )

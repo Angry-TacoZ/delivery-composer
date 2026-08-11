@@ -212,12 +212,12 @@ function AssignmentRow({
           <strong>{assignment.role_on_team}</strong>
           <span>{selectedOption.consultant.name} · {selectedOption.consultant.seniority}</span>
         </span>
-        <span className="score-block" aria-label={`${percent(selectedOption.semantic_score)} semantic alignment`}>
+        <span className="score-block" aria-label={`${percent(selectedOption.semantic_score)} alignment score`}>
           <span>{percent(selectedOption.semantic_score)} alignment</span>
           <i style={{ "--score": selectedOption.semantic_score } as React.CSSProperties} />
         </span>
         <span className={allChecksPass ? "verified" : "exception"}>
-          {isOverridden ? "Human override" : allChecksPass ? "Verified" : "Review"}
+          {isOverridden ? "Human override" : allChecksPass ? "Eligible" : "Review"}
         </span>
         <span className="expand-label">{open ? "Close evidence" : "View evidence"}</span>
       </button>
@@ -514,7 +514,7 @@ export default function App() {
         <header className="masthead">
           <a className="wordmark" href="/" aria-label="Delivery Composer home">Delivery Composer</a>
           <div className="masthead-meta">
-            <span>Concept for C86</span>
+            <span>Consulting delivery prototype</span>
             <span>Synthetic data only</span>
           </div>
           <span className="edition">MVP / 01</span>
@@ -527,11 +527,11 @@ export default function App() {
           </div>
           <div className="hero-statement">
             <p>Turn an unstructured client brief into a defensible delivery-team recommendation—without turning AI into the decision maker.</p>
-            <span>Rules first / Retrieval second / Human decision always</span>
+            <span>Constraints first / Evidence second / Human decision always</span>
           </div>
         </div>
 
-        <ol className="method-strip" aria-label="C86 IDEAL delivery cycle">
+        <ol className="method-strip" aria-label="Delivery assurance cycle">
           {IDEAL_STAGES.map((stage, index) => {
             const stageState = idealStageStates[index];
             return (
@@ -551,7 +551,7 @@ export default function App() {
             <p className="section-number">01 / Identify · 02 / Define · 03 / Execute</p>
             <h2>From client need to accountable recommendation.</h2>
           </div>
-          <p>The system separates deterministic constraints from semantic relevance, then shows the evidence a delivery leader needs to challenge the result.</p>
+          <p>The system separates hard constraints from capability alignment, then shows the evidence a delivery leader needs to challenge the result.</p>
         </header>
 
         <div className="composer-grid">
@@ -626,7 +626,7 @@ export default function App() {
             <button className="compose-button" onClick={runComposition} disabled={isRunning || brief.trim().length < 40}>
               {isRunning ? "Composing evidence…" : "Compose delivery team"}
             </button>
-            <p className="action-note">Meeting mode uses synthetic briefs. A greenlit workflow can accept searchable PDFs through the same validated evaluation contract.</p>
+            <p className="action-note">Portfolio mode uses synthetic briefs. A production workflow can accept validated, searchable PDFs through the same evaluation contract.</p>
             {error && <p className="error-message" role="alert">{error}</p>}
           </section>
 
@@ -729,7 +729,7 @@ export default function App() {
                   />
                   <div className="review-notes-meta">
                     <span>{reviewNotes.length} / 600</span>
-                    <span>{result.retrieval_mode === "postgres_pgvector" ? "Stored with the run" : "Current API session"}</span>
+                    <span>{result.retrieval_mode === "postgres_pgvector" ? "Stored with the run" : "Temporary demo session"}</span>
                   </div>
                   {reviewValidationError && <p className="review-validation-error" role="alert">{reviewValidationError}</p>}
                   <div className="decision-buttons" aria-busy={isReviewSaving}>
@@ -743,7 +743,7 @@ export default function App() {
                   <div>
                     <span>{reviewState.status === "approved" ? "Team approved" : "Revision requested"}</span>
                     <p>
-                      Feedback stored {reviewState.persistence_mode === "postgres" ? "in PostgreSQL" : "for this API session"}{reviewState.override_count > 0 ? ` with ${reviewState.override_count} human ${reviewState.override_count === 1 ? "override" : "overrides"}` : ""}.
+                      Feedback stored {reviewState.persistence_mode === "postgres" ? "in PostgreSQL" : "temporarily for this demo session"}{reviewState.override_count > 0 ? ` with ${reviewState.override_count} human ${reviewState.override_count === 1 ? "override" : "overrides"}` : ""}.
                     </p>
                     {reviewNotes && <blockquote>{reviewNotes}</blockquote>}
                   </div>
@@ -768,8 +768,8 @@ export default function App() {
 
       <footer className="site-footer">
         <span>Delivery Composer</span>
-        <span>Evidence-backed staffing intelligence</span>
-        <span>Private MVP / Synthetic data</span>
+        <span>Evidence-backed delivery composition</span>
+        <span>Public portfolio demo / Synthetic data</span>
       </footer>
     </main>
   );

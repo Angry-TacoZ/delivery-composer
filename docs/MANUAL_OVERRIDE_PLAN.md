@@ -20,14 +20,14 @@ Expand the synthetic roster from five to fifteen profiles: three candidates for 
 | Cloud Engineer | media platform automation | regulated cloud foundations | transport/financial platform delivery |
 | Security Consultant | high-assurance SOC transformation | media/financial incident response | critical-infrastructure zero trust |
 
-Every profile remains fictional and includes verified-style evidence plus explicit considerations such as sector depth, clearance, availability, or capability gaps.
+Every profile remains fictional and includes documented synthetic evidence plus explicit considerations such as sector depth, clearance, availability, or capability gaps.
 
 ## Decision rules
 
 1. The server returns exactly three candidates for every requested role.
 2. The default recommendation must satisfy clearance and availability; exact role matches outrank unrelated profiles.
 3. Failed constraints remain visible in the comparison rather than being hidden.
-4. A human may compare the current assignment with either runner-up in a focused dialog, then select another candidate, including one with a visible exception; the UI must never relabel that exception as verified.
+4. A human may compare the current assignment with either runner-up in a focused dialog, then select another candidate, including one with a visible exception; the UI must never relabel that exception as eligible.
 5. Overrides record the role, original recommendation, and selected consultant with the final review.
 6. Changing the brief or composing again clears all prior overrides.
 7. Deterministic alignment is auditable as `58 base + 8 per required-capability match + 5 per preferred-sector match`, capped at 97.

@@ -26,7 +26,7 @@ Replace the current terminal `Request revision` state with a real, traceable fee
 - The browser supplies an untrusted prior run ID and revision text.
 - FastAPI validates text shape and length, verifies that the prior run exists, requires a recorded `needs_changes` review, rejects mismatched submitted feedback, and uses the persisted review notes for composition.
 - PostgreSQL stores the parent run and revision feedback server-side when live mode is enabled.
-- Paid-model credentials remain server-only; deterministic meeting mode makes no external calls.
+- Paid-model credentials remain server-only; deterministic portfolio mode makes no external calls.
 
 ## Acceptance criteria
 

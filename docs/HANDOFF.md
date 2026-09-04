@@ -22,6 +22,7 @@ The deterministic React and FastAPI workflow is implemented, tested, and hosted.
 - `web/src/App.tsx` and `web/src/styles.css`: neutral product copy and asset naming.
 - `scripts/verify.ps1` and `scripts/deploy-demo.ps1`: repository-owned, machine-independent verification.
 - `docs/PORTFOLIO_DEMO.md`, `docs/DELIVERY_WORKFLOW.md`, and `docs/VISUAL_DIRECTION.md`: reusable product, workflow, and visual rationale.
+- `.env.example` and `api/tests/test_main.py`: accurate public origins and configuration-isolated health-contract coverage.
 
 # Verification
 
@@ -32,6 +33,7 @@ The deterministic React and FastAPI workflow is implemented, tested, and hosted.
 - Generalization scan: no tailored-company, interview, private-MVP, local-username, or stale session-copy references found in current repository text.
 - Browser QA: neutral identity, documented synthetic brief, composition, eligible labels, temporary-session copy, desktop/mobile rendering, and zero console warnings or errors passed.
 - Updated public screenshots were visually inspected; obsolete company-specific screenshots were removed.
+- PR #12 verification: Ruff, 25 API tests, frontend production build, and predeployment secret/API exposure scan passed after isolating the health test from ambient credentials.
 - CI must pass on the PR head before merge.
 
 # Next task

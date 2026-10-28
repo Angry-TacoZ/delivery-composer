@@ -39,7 +39,13 @@ def _encrypted_pdf_bytes(text: str) -> bytes:
 
 
 def test_health_does_not_expose_configuration() -> None:
-    app = create_app(Settings(demo_mode=True))
+    app = create_app(
+        Settings(
+            demo_mode=True,
+            database_url=None,
+            gemini_api_key=None,
+        )
+    )
     with TestClient(app) as client:
         response = client.get("/api/health")
 
